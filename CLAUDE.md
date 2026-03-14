@@ -21,22 +21,8 @@ Key concepts (see Glossary in PRD):
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
 | UI components | shadcn/ui |
 | Backend | NestJS 11, TypeScript |
+| Testing | Playwright (E2E) |
 | Dev | `npm run dev` — runs both frontend and backend concurrently |
-
-## Project Structure
-
-```
-/
-├── frontend/         # Next.js app
-│   └── app/          # App Router pages and layouts
-├── backend/          # NestJS API
-│   └── src/          # Controllers, services, modules
-├── Specs/
-│   ├── PRD.md        # Product requirements (source of truth)
-│   ├── designs/      # UI design references (PNG screenshots)
-│   └── color-palettes.md
-└── CLAUDE.md         # This file
-```
 
 ## V1 Scope: Frontend Only
 
@@ -91,6 +77,33 @@ app/jobs/[jobId]/themes/
     └── use-themes.ts     ← client-side logic
 ```
 
+## Testing Strategy
+
+### Playwright E2E
+
+- Tests live in `frontend/e2e/`
+- Each test verifies one **Minimum Testeable Increment (MTI)**: navigate to a route and assert the key behaviour works
+- Tests run against the dev server (`npm run dev`)
+- Command: `npm run test:e2e` (from `frontend/`)
+
+### Definition of Done
+
+A feature is **Done** when:
+1. The behaviour works in the browser without errors in the console
+2. A Playwright test covers the MTI and passes
+
+### What NOT to test
+
+- shadcn/ui internals — already tested by the library
+- Mock data shapes — they're test fixtures, not production logic
+- CSS / visual layout — verified manually against design references
+
+### Manual testing at phase end
+
+Each phase ends with a manual test checklist defined in `Specs/PROGRESS.md`. After all Playwright tests pass, prompt the user to run the manual checklist before marking the phase as complete.
+
+---
+
 ## Design
 
 - App name: **Escribe**
@@ -99,3 +112,19 @@ app/jobs/[jobId]/themes/
 - Status badges: Done = emerald, In Progress = amber, To Do = stone
 - AI chat accent: cyan
 - Design references in `Specs/designs/` — check before building any screen
+
+## Project Structure
+
+```
+/
+├── frontend/
+│   ├── app/          # App Router pages and layouts
+│   └── e2e/          # Playwright tests (one file per MTI)
+├── backend/
+│   └── src/
+├── Specs/
+│   ├── PRD.md        # Product requirements (source of truth)
+│   ├── PROGRESS.md   # MTI tracker
+│   └── designs/      # UI design references (PNG screenshots)
+├── CLAUDE.md         # This file
+└── DECISIONS.md      # Technical decision log

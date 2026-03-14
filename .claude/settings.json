@@ -7,7 +7,9 @@
       "Bash(/Users/gabriel/Documents/job-seeker-assistant/.gitignore:*)",
       "Bash(git add .gitignore tsconfig.json package.json Specs/ backend/ frontend/)",
       "Bash(git commit:*)",
-      "Bash(git push -u origin main)"
+      "Bash(git push -u origin main)",
+      "Bash(npm run test:e2e)",
+      "Bash(git add .claude/agents/front-end-dev.md .claude/settings.json CLAUDE.md Specs/PROGRESS.md frontend/app/globals.css frontend/app/layout.tsx frontend/app/page.tsx frontend/app/experience/ frontend/app/jobs/ frontend/package.json frontend/components.json frontend/components/ frontend/e2e/ frontend/lib/ frontend/playwright.config.ts package-lock.json)"
     ],
     "additionalDirectories": [
       "/Users/gabriel/Documents/job-seeker-assistant/.claude"

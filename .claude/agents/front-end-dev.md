@@ -140,3 +140,26 @@ Before writing any code, always output a short plan in this format:
 ```
 
 Only start writing code after outputting this plan. This helps the developer understand the structure before reading the implementation.
+
+## After building any feature (mandatory)
+
+Every MTI must have a Playwright test before it is considered Done.
+
+Test file location: `frontend/e2e/<feature>.spec.ts`
+
+Each test must:
+1. Navigate to the relevant route
+2. Assert the key element or behaviour described in the MTI is present
+3. Pass with `npm run test:e2e`
+
+Example structure:
+```ts
+import { test, expect } from '@playwright/test'
+
+test('dashboard shows job offer cards', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('Acme Corp')).toBeVisible()
+})
+```
+
+Keep tests short and focused on the MTI — one behaviour per test. Do not test implementation details (class names, internal state).
