@@ -6,6 +6,7 @@ import { JobsProvider } from "./context/jobs-context"
 import { ThemesProvider } from "./context/themes-context"
 import { getMockJobs } from "@/lib/mock/jobs"
 import { getMockThemes } from "@/lib/mock/themes"
+import UserMenu from "./components/user-menu"
 
 const geist = Geist({
   variable: "--font-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
                 >
                   Experience Library
                 </Link>
+                <UserMenu />
               </nav>
             </div>
           </header>
