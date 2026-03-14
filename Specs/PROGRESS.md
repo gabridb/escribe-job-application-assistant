@@ -26,11 +26,11 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 
 ## Phase 2 — Dashboard & Job Offers
 
-- ⬜ **Tipos del dominio + mock data** → `getMockJobs()` existe y devuelve datos; verificable renderizando tarjetas en `/`
-- ⬜ **Dashboard renderiza lista de jobs** → `/` muestra tarjetas de Job Offers con título, empresa y badge de estado
-- ⬜ **Navegar a Add Job Offer** → el botón "Add Job Offer" lleva a `/jobs/new`
-- ⬜ **Formulario Add Job Offer renderiza** → `/jobs/new` muestra el formulario con campos de título, empresa y descripción
-- ⬜ **Submit añade job y redirige** → al enviar el formulario, el nuevo job aparece en el Dashboard
+- ✅ **Tipos del dominio + mock data** → `getMockJobs()` existe y devuelve datos; verificable renderizando tarjetas en `/`
+- ✅ **Dashboard renderiza lista de jobs** → `/` muestra tarjetas de Job Offers con título, empresa y badge de estado
+- ✅ **Navegar a Add Job Offer** → el botón "Add Job Offer" lleva a `/jobs/new`
+- ✅ **Formulario Add Job Offer renderiza** → `/jobs/new` muestra el formulario con campos de título, empresa y descripción
+- ✅ **Submit añade job y redirige** → al enviar el formulario, el nuevo job aparece en el Dashboard
 
 **Test manual al completar la fase:**
 - [ ] El Dashboard muestra al menos 2 job cards con título, empresa y badge de estado
