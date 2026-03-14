@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --skip-install)",
+      "Bash(npx create-next-app@latest frontend --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --skip-install --no-turbopack 2)",
+      "Bash(1:*)",
+      "Bash(/Users/gabriel/Documents/job-seeker-assistant/.gitignore:*)",
+      "Bash(git add .gitignore tsconfig.json package.json Specs/ backend/ frontend/)",
+      "Bash(git commit:*)",
+      "Bash(git push -u origin main)"
+    ],
+    "additionalDirectories": [
+      "/Users/gabriel/Documents/job-seeker-assistant/.claude"
+    ]
+  }
+}
