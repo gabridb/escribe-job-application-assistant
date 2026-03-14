@@ -2,6 +2,8 @@
 
 import { useRef, useEffect } from 'react'
 import { useWritingAssistant, WritingContext } from './hooks/use-writing-assistant'
+import { useThemes } from '@/app/context/themes-context'
+import { useJobs } from '@/app/context/jobs-context'
 
 interface WritingAssistantProps {
   context: WritingContext
@@ -13,11 +15,21 @@ interface WritingAssistantProps {
 
 export default function WritingAssistant({
   context,
-  jobId: _jobId,
-  themeId: _themeId,
+  jobId,
+  themeId,
   title,
   subtitle,
 }: WritingAssistantProps) {
+  const { themes } = useThemes()
+  const { jobs } = useJobs()
+
+  const job = jobs.find((j) => j.id === jobId)
+  if (job) subtitle = `${job.title} @ ${job.company}`
+
+  if (themeId) {
+    const theme = themes.find((t) => t.id === themeId)
+    if (theme) title = theme.name
+  }
   const {
     messages,
     input,
@@ -56,15 +68,6 @@ export default function WritingAssistant({
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Chat panel */}
         <div className="w-[40%] flex flex-col border-r border-stone-200">
-          {/* Chat header */}
-          <div className="px-4 py-3 border-b border-stone-200 bg-white">
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full bg-cyan-500" />
-              <span className="text-sm font-medium text-stone-900">AI Assistant</span>
-            </div>
-            <p className="text-xs text-stone-500 mt-0.5 ml-4">Powered by AI</p>
-          </div>
-
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-stone-50">
             {messages.map((message) =>
