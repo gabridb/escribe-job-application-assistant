@@ -1,8 +1,18 @@
-export default function CvPage() {
+import WritingAssistant from '@/app/components/writing-assistant'
+
+export default async function CvPage({
+  params,
+}: {
+  params: Promise<{ jobId: string }>
+}) {
+  const { jobId } = await params
+
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-stone-900">Tailored CV</h1>
-      <p className="mt-1 text-stone-600">Adapt your CV for this role</p>
-    </div>
+    <WritingAssistant
+      context="cv"
+      jobId={jobId}
+      title="Tailored CV"
+      subtitle="Adapt your CV for this role"
+    />
   )
 }

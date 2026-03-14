@@ -1,8 +1,19 @@
-export default function RelevantExperiencePage() {
+import WritingAssistant from '@/app/components/writing-assistant'
+
+export default async function RelevantExperiencePage({
+  params,
+}: {
+  params: Promise<{ jobId: string; themeId: string }>
+}) {
+  const { jobId, themeId } = await params
+
   return (
-    <div className="mx-auto max-w-screen-xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-stone-900">Relevant Experience</h1>
-      <p className="mt-1 text-stone-600">Write your example for this theme</p>
-    </div>
+    <WritingAssistant
+      context="relevant-experience"
+      jobId={jobId}
+      themeId={themeId}
+      title="Relevant Experience"
+      subtitle="Write your example for this theme"
+    />
   )
 }
