@@ -48,7 +48,7 @@ export default function JobsList() {
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Company</th>
                 <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Relevant Experience</th>
+                <th className="px-4 py-3 font-medium">Key Themes</th>
                 <th className="px-4 py-3 font-medium">Cover Letter</th>
                 <th className="px-4 py-3 font-medium">CV</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
@@ -72,7 +72,7 @@ export default function JobsList() {
                       size="sm"
                       className="text-stone-700 border-stone-300"
                     >
-                      <Link href={`/jobs/${job.id}/themes`}>Relevant Exp</Link>
+                      <Link href={`/jobs/${job.id}/themes`}>Key Themes</Link>
                     </Button>
                   </td>
                   <td className="px-4 py-3">

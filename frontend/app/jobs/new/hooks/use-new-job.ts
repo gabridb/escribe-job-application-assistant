@@ -9,26 +9,20 @@ import type { Job } from '@/lib/mock/jobs'
 interface UseNewJobReturn {
   description: string
   setDescription: (value: string) => void
-  isSubmitting: boolean
   handleSubmit: (e: React.FormEvent) => void
+  submitWithText: (text: string) => void
 }
 
-export function useNewJob(onSuccess?: () => void): UseNewJobReturn {
+export function useNewJob(onSuccess?: (jobId: string) => void): UseNewJobReturn {
   const [description, setDescription] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const { addJob } = useJobs()
   const { addThemes } = useThemes()
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!description.trim()) return
+  const submitWithText = useCallback(
+    (text: string) => {
+      if (!text.trim()) return
 
-      setIsSubmitting(true)
-
-      // Extract a rough title and company from the first line of the pasted text.
-      // In V1 this is a simple heuristic — no real AI parsing.
-      const lines = description.trim().split('\n').filter(Boolean)
+      const lines = text.trim().split('\n').filter(Boolean)
       const title = lines[0]?.slice(0, 80) ?? 'Untitled Role'
       const company = lines[1]?.slice(0, 60) ?? 'Unknown Company'
 
@@ -36,17 +30,25 @@ export function useNewJob(onSuccess?: () => void): UseNewJobReturn {
         id: `job-${Date.now()}`,
         title,
         company,
-        description,
+        description: text,
         status: 'active',
         createdAt: new Date().toISOString().slice(0, 10),
       }
 
       addJob(newJob)
       addThemes(generateMockThemes(newJob))
-      onSuccess?.()
+      onSuccess?.(newJob.id)
     },
-    [description, addJob, addThemes, onSuccess],
+    [addJob, addThemes, onSuccess],
   )
 
-  return { description, setDescription, isSubmitting, handleSubmit }
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      submitWithText(description)
+    },
+    [description, submitWithText],
+  )
+
+  return { description, setDescription, handleSubmit, submitWithText }
 }

@@ -43,7 +43,7 @@ export function JobsProvider({
   }, [jobs])
 
   const addJob = useCallback((job: Job) => {
-    setJobs((prev) => [...prev, job])
+    setJobs((prev) => [job, ...prev])
   }, [])
 
   const deleteJob = useCallback((id: string) => {

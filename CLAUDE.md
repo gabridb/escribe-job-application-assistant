@@ -125,6 +125,43 @@ Each phase ends with a manual test checklist defined in `Specs/PROGRESS.md`. Aft
 - AI chat accent: cyan
 - Design references in `Specs/designs/` — check before building any screen
 
+## Frontend vs Backend Responsibilities
+
+### Frontend owns
+- All UI rendering, routing, and client state (React Context + localStorage)
+- Form validation and presentational logic
+- The Writing Assistant UI — chat input, message rendering, rich text editor
+- **In v1**: mocked AI responses (hardcoded, no network calls)
+- **In v2**: sends user messages to the backend and streams responses back
+
+### Backend owns
+- Data persistence (database — source of truth for all resources)
+- **AI orchestration**: receives a chat message from the frontend, constructs the full prompt (injecting job description, CV, experience entries from the DB), calls Claude, and streams the response back
+- Business logic with side effects (e.g. generating themes from a job description)
+- Auth and API key security (the Claude API key never touches the browser)
+
+### The seam: `frontend/lib/services/`
+
+Each service file is a thin abstraction over the persistence layer:
+
+```
+Component → Context → service.getAll() → [localStorage NOW | fetch('/api/...') LATER]
+                                                  ↑
+                                         only this changes in v2
+```
+
+When the backend is ready, swap the `localStorage` calls in services for `fetch` calls — no component code changes.
+
+### AI call flow (v2)
+
+```
+Browser → POST /api/chat  →  NestJS  →  Claude API
+                    ↑ enriched with DB context (job, CV, themes)
+          ← streaming response ←←←←←←←←←←←←←←←←←←
+```
+
+---
+
 ## Project Structure
 
 ```

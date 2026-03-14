@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test('writing assistant renders split-screen layout', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
   // chat panel
-  await expect(page.getByText('AI Assistant')).toBeVisible()
+  await expect(page.getByPlaceholder('Ask AI to modify your document...')).toBeVisible()
   // editor panel
   await expect(page.getByPlaceholder('Start writing here...')).toBeVisible()
 })

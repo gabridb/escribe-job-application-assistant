@@ -8,8 +8,8 @@ import { useNewJob } from './hooks/use-new-job'
 
 export default function NewJobForm() {
   const router = useRouter()
-  const { description, setDescription, isSubmitting, handleSubmit } =
-    useNewJob(() => router.push('/'))
+  const { description, setDescription, handleSubmit } =
+    useNewJob((jobId) => router.push(`/jobs/${jobId}/processing`))
   const inputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -88,7 +88,7 @@ export default function NewJobForm() {
             <div className="flex justify-end">
               <Button
                 type="submit"
-                disabled={isSubmitting || !description.trim()}
+                disabled={!description.trim()}
                 style={{ backgroundColor: '#4a5c2f' }}
                 className="text-white hover:opacity-90 disabled:opacity-50"
               >

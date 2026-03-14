@@ -10,10 +10,10 @@ test('dashboard shows job offer rows with title and company', async ({ page }) =
 })
 
 // MTI 3: "Add Job Offer" button navigates to /jobs/new
-test('Add Job Offer button navigates to /jobs/new', async ({ page }) => {
+test('Add Job Offer button opens dialog', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('link', { name: /add job offer/i }).click()
-  await expect(page).toHaveURL('/jobs/new')
+  await page.getByRole('button', { name: /add job offer/i }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
 })
 
 // MTI 4: /jobs/new renders the form
@@ -38,7 +38,7 @@ test('submitting the form adds job and shows it on the dashboard', async ({ page
   await page.getByRole('button', { name: /add job offer/i }).click()
 
   // Should redirect to dashboard
-  await expect(page).toHaveURL('/')
+  await expect(page).toHaveURL('/', { timeout: 6000 })
 
   // New job should be visible
   await expect(page.getByText('Head of Engineering')).toBeVisible()

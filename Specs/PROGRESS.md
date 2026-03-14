@@ -1,3 +1,16 @@
+Estoy implemementando el siguiente user journey:
+1. Click en el botón "Add Job Offer"
+2. Se sube un job offer en formato md
+3. La IA analiza el archivo y extrae los metadatos para presentarlos en el dashboard y los Key Themes
+4. /jobs/job-n/themes muestra los themes de la nueva job offer
+
+Siguiente paso: 3. La IA analiza el archivo y extrae los metadatos para presentarlos en el dashboard y los Key Themes. 
+
+Implementar un modelo gratuito de ia en el backend usando la api de openrouter
+
+Después: guardar la información en una base de datos postgreSQL en un docket
+
+
 # Escribe — Build Progress
 
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.
@@ -58,11 +71,11 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 
 ## Phase 4 — Writing Assistant
 
-- ⬜ **Layout split-screen renderiza** → `/jobs/:jobId/themes/:themeId` muestra el panel izquierdo (chat) y derecho (editor) en pantalla completa
-- ⬜ **Editor de texto funciona** → el usuario puede escribir en el panel derecho
-- ⬜ **Chat renderiza mensajes** → el panel izquierdo muestra mensajes de usuario y respuestas mockeadas de la IA
-- ⬜ **Cover Letter writer funciona** → `/jobs/:jobId/cover-letter` abre el Writing Assistant con contexto de Cover Letter
-- ⬜ **CV writer funciona** → `/jobs/:jobId/cv` abre el Writing Assistant con contexto de CV
+- ✅ **Layout split-screen renderiza** → `/jobs/:jobId/themes/:themeId` muestra el panel izquierdo (chat) y derecho (editor) en pantalla completa
+- ✅ **Editor de texto funciona** → el usuario puede escribir en el panel derecho
+- ✅ **Chat renderiza mensajes** → el panel izquierdo muestra mensajes de usuario y respuestas mockeadas de la IA
+- ✅ **Cover Letter writer funciona** → `/jobs/:jobId/cover-letter` abre el Writing Assistant con contexto de Cover Letter
+- ✅ **CV writer funciona** → `/jobs/:jobId/cv` abre el Writing Assistant con contexto de CV
 
 **Test manual al completar la fase:**
 - [ ] Abrir un theme → layout split-screen ocupa toda la pantalla (sin scroll vertical)

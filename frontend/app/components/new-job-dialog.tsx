@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,15 +18,16 @@ interface NewJobDialogProps {
 }
 
 export default function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
-  const { description, setDescription, isSubmitting, handleSubmit } =
-    useNewJob(() => onOpenChange(false))
+  const router = useRouter()
+  const { description, setDescription, handleSubmit, submitWithText } =
+    useNewJob((jobId) => { onOpenChange(false); router.push(`/jobs/${jobId}/processing`) })
   const inputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => setDescription(reader.result as string)
+    reader.onload = () => submitWithText(reader.result as string)
     reader.readAsText(file)
   }
 
@@ -85,7 +87,7 @@ export default function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) 
           <div className="flex justify-end">
             <Button
               type="submit"
-              disabled={isSubmitting || !description.trim()}
+              disabled={!description.trim()}
               style={{ backgroundColor: '#4a5c2f' }}
               className="text-white hover:opacity-90 disabled:opacity-50"
             >
