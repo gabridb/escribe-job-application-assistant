@@ -1,5 +1,5 @@
-import DashboardClient from './dashboard-client'
+import JobsList from './jobs-list'
 
 export default function DashboardPage() {
-  return <DashboardClient />
+  return <JobsList />
 }

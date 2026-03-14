@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useJobs } from './jobs-context'
+import { useJobs } from './context/jobs-context'
 
-export default function DashboardClient() {
+export default function JobsList() {
   const { jobs, deleteJob } = useJobs()
 
   return (

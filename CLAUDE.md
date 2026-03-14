@@ -53,7 +53,7 @@ Focus: build all UI screens and interactions with hardcoded mock data and respon
 Follow the Next.js App Router model — this is the primary architectural boundary:
 
 - **Server Components** (`page.tsx`, layout files, async components): data fetching, mock service calls, pass data down as props. No `useState`, no event handlers.
-- **Client Components** (`*-client.tsx` or any file with `'use client'`): interactivity, state, browser APIs, event handlers.
+- **Client Components** (any file with `'use client'`): interactivity, state, browser APIs, event handlers.
 
 **Rule of thumb**: push `'use client'` as far down the tree as possible. Keep pages as Server Components; extract only the interactive parts into Client Components.
 
@@ -72,9 +72,21 @@ Keeps components thin and logic testable.
 ```
 app/jobs/[jobId]/themes/
 ├── page.tsx              ← Server Component (data, layout)
-├── themes-list.tsx       ← 'use client' (interactive UI)
+├── themes-list.tsx       ← 'use client' (interactive UI) — named by what it renders
 └── hooks/
     └── use-themes.ts     ← client-side logic
+```
+
+Client Components are named **descriptively** (e.g. `jobs-list.tsx`, `themes-list.tsx`). Never use a `-client` suffix.
+
+#### Contexts
+
+All React Contexts live in `app/context/`:
+
+```
+app/context/
+├── jobs-context.tsx      ← JobsProvider + useJobs
+└── themes-context.tsx    ← ThemesProvider + useThemes
 ```
 
 ## Testing Strategy

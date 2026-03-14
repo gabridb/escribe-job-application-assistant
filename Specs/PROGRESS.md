@@ -43,9 +43,9 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 
 ## Phase 3 — Key Interview Themes
 
-- ⬜ **Navegar a Themes desde Dashboard** → clicar un job lleva a `/jobs/:jobId/themes`
-- ⬜ **Lista de themes renderiza** → la página muestra themes mockeados con nombre y badge de estado (To Do / In Progress / Done)
-- ⬜ **Mock AI genera themes al crear job** → al añadir un job, los themes se generan automáticamente con datos mockeados
+- ✅ **Navegar a Themes desde Dashboard** → clicar un job lleva a `/jobs/:jobId/themes`
+- ✅ **Lista de themes renderiza** → la página muestra themes mockeados con nombre y badge de estado (To Do / In Progress / Done)
+- ✅ **Mock AI genera themes al crear job** → al añadir un job, los themes se generan automáticamente con datos mockeados
 
 **Test manual al completar la fase:**
 - [ ] Clicar un job card en el Dashboard navega a su página de themes

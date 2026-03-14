@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test"
 // MTI 1: shadcn/ui instalado — Button renderiza en el Dashboard
 test("shadcn Button renders on dashboard", async ({ page }) => {
   await page.goto("/")
-  await expect(page.getByRole("button", { name: "Add Job Offer" })).toBeVisible()
+  await expect(page.getByRole("link", { name: "+ Add Job Offer" })).toBeVisible()
 })
 
 // MTI 2: Root layout — header con logo "Escribe" visible en todas las rutas

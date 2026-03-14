@@ -2,7 +2,9 @@
 
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useJobs } from '@/app/jobs-context'
+import { useJobs } from '@/app/context/jobs-context'
+import { useThemes } from '@/app/context/themes-context'
+import { generateMockThemes } from '@/lib/mock/themes'
 import type { Job } from '@/lib/mock/jobs'
 
 interface FormState {
@@ -20,6 +22,7 @@ export function useNewJob(): UseNewJobReturn {
   const [form, setForm] = useState<FormState>({ description: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { addJob } = useJobs()
+  const { addThemes } = useThemes()
   const router = useRouter()
 
   const setDescription = useCallback((value: string) => {
@@ -49,9 +52,10 @@ export function useNewJob(): UseNewJobReturn {
       }
 
       addJob(newJob)
+      addThemes(generateMockThemes(newJob))
       router.push('/')
     },
-    [form, addJob, router],
+    [form, addJob, addThemes, router],
   )
 
   return {

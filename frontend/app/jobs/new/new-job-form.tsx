@@ -13,10 +13,10 @@ export default function NewJobForm() {
       <div className="mx-auto max-w-2xl">
         <div className="rounded-xl border border-stone-200 bg-white p-8 shadow-sm">
           <h1 className="text-xl font-bold text-stone-900">
-            Add a new job offer
+            Add Job Offer
           </h1>
           <p className="mt-1 text-sm text-stone-600">
-            Copy &amp; Paste your new offer or upload it from a file
+            Add a new job offer
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-6">

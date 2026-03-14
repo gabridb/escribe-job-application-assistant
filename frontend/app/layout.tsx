@@ -2,8 +2,10 @@ import type { Metadata } from "next"
 import { Geist } from "next/font/google"
 import Link from "next/link"
 import "./globals.css"
-import { JobsProvider } from "./jobs-context"
+import { JobsProvider } from "./context/jobs-context"
+import { ThemesProvider } from "./context/themes-context"
 import { getMockJobs } from "@/lib/mock/jobs"
+import { getMockThemes } from "@/lib/mock/themes"
 
 const geist = Geist({
   variable: "--font-sans",
@@ -21,11 +23,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const seedJobs = getMockJobs()
+  const seedThemes = ['job-1', 'job-2', 'job-3'].flatMap(getMockThemes)
 
   return (
     <html lang="en">
       <body className={`${geist.variable} antialiased min-h-screen bg-stone-50`}>
         <JobsProvider initialJobs={seedJobs}>
+          <ThemesProvider initialThemes={seedThemes}>
           <header className="border-b border-stone-200 bg-white">
             <div className="mx-auto flex h-14 max-w-screen-xl items-center justify-between px-6">
               <Link href="/" className="text-lg font-semibold text-stone-900">
@@ -48,6 +52,7 @@ export default function RootLayout({
             </div>
           </header>
           <main>{children}</main>
+          </ThemesProvider>
         </JobsProvider>
       </body>
     </html>
