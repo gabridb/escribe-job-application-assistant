@@ -1,15 +1,10 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useJobs } from '@/app/context/jobs-context'
 import { useThemes } from '@/app/context/themes-context'
 import { generateMockThemes } from '@/lib/mock/themes'
 import type { Job } from '@/lib/mock/jobs'
-
-interface FormState {
-  description: string
-}
 
 interface UseNewJobReturn {
   description: string
@@ -18,27 +13,22 @@ interface UseNewJobReturn {
   handleSubmit: (e: React.FormEvent) => void
 }
 
-export function useNewJob(): UseNewJobReturn {
-  const [form, setForm] = useState<FormState>({ description: '' })
+export function useNewJob(onSuccess?: () => void): UseNewJobReturn {
+  const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { addJob } = useJobs()
   const { addThemes } = useThemes()
-  const router = useRouter()
-
-  const setDescription = useCallback((value: string) => {
-    setForm((prev) => ({ ...prev, description: value }))
-  }, [])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
-      if (!form.description.trim()) return
+      if (!description.trim()) return
 
       setIsSubmitting(true)
 
       // Extract a rough title and company from the first line of the pasted text.
       // In V1 this is a simple heuristic — no real AI parsing.
-      const lines = form.description.trim().split('\n').filter(Boolean)
+      const lines = description.trim().split('\n').filter(Boolean)
       const title = lines[0]?.slice(0, 80) ?? 'Untitled Role'
       const company = lines[1]?.slice(0, 60) ?? 'Unknown Company'
 
@@ -46,22 +36,17 @@ export function useNewJob(): UseNewJobReturn {
         id: `job-${Date.now()}`,
         title,
         company,
-        description: form.description,
+        description,
         status: 'active',
         createdAt: new Date().toISOString().slice(0, 10),
       }
 
       addJob(newJob)
       addThemes(generateMockThemes(newJob))
-      router.push('/')
+      onSuccess?.()
     },
-    [form, addJob, addThemes, router],
+    [description, addJob, addThemes, onSuccess],
   )
 
-  return {
-    description: form.description,
-    setDescription,
-    isSubmitting,
-    handleSubmit,
-  }
+  return { description, setDescription, isSubmitting, handleSubmit }
 }

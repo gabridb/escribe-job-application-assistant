@@ -9,10 +9,41 @@
       "Bash(git commit:*)",
       "Bash(git push -u origin main)",
       "Bash(npm run test:e2e)",
-      "Bash(git add .claude/agents/front-end-dev.md .claude/settings.json CLAUDE.md Specs/PROGRESS.md frontend/app/globals.css frontend/app/layout.tsx frontend/app/page.tsx frontend/app/experience/ frontend/app/jobs/ frontend/package.json frontend/components.json frontend/components/ frontend/e2e/ frontend/lib/ frontend/playwright.config.ts package-lock.json)"
+      "Bash(git add .claude/agents/front-end-dev.md .claude/settings.json CLAUDE.md Specs/PROGRESS.md frontend/app/globals.css frontend/app/layout.tsx frontend/app/page.tsx frontend/app/experience/ frontend/app/jobs/ frontend/package.json frontend/components.json frontend/components/ frontend/e2e/ frontend/lib/ frontend/playwright.config.ts package-lock.json)",
+      "Bash(git add Specs/PROGRESS.md frontend/app/jobs/new/page.tsx frontend/app/layout.tsx frontend/app/page.tsx frontend/app/dashboard-client.tsx frontend/app/jobs-context.tsx frontend/app/jobs/new/hooks/ frontend/app/jobs/new/new-job-form.tsx frontend/e2e/phase2-dashboard.spec.ts frontend/lib/mock/)",
+      "Bash(PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test --config=playwright.config.ts)",
+      "Bash(lsof -ti :3000)",
+      "Bash(ps -p 541 -p 12261 -o pid,command)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \" %{http_code}\" http://localhost:3000/jobs/new)",
+      "Bash(curl -s -o /dev/null -w \" %{http_code}\" http://localhost:3000/jobs/test-job/themes)",
+      "Bash(curl -s http://localhost:3000/jobs/test-job/themes)",
+      "Bash(python3 -c \"import sys,json,re; body=sys.stdin.read\\(\\); m=re.search\\(r''\"\"message\"\":\"\"\\(.*?\\)\"\"'', body\\); print\\(m.group\\(1\\)[:500] if m else body[:500]\\)\")",
+      "Bash(npx shadcn@latest add badge --yes)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/jobs/test-job/themes)",
+      "Bash(curl -s -o /dev/null -w \" %{http_code}\" http://localhost:3000/jobs/job-1/themes)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/jobs/job-1/themes)",
+      "Bash(ls /Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/)",
+      "Bash(ls /Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/themes/)",
+      "Bash(ls /Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/themes/[themeId]/)",
+      "Bash(cat /Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/themes/[themeId]/page.tsx)",
+      "Bash(cat /Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/cover-letter/page.tsx)",
+      "Bash(cat /Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/cv/page.tsx)",
+      "Bash(git add CLAUDE.md Specs/PROGRESS.md Specs/PHASE4-PLAN.md frontend/app/context/ frontend/app/jobs-list.tsx \"frontend/app/jobs/[jobId]/themes/themes-list.tsx\" \"frontend/app/jobs/[jobId]/themes/page.tsx\" frontend/app/jobs/new/hooks/use-new-job.ts frontend/app/jobs/new/new-job-form.tsx frontend/app/layout.tsx frontend/app/page.tsx frontend/app/dashboard-client.tsx frontend/app/jobs-context.tsx frontend/components/ui/badge.tsx frontend/e2e/phase3-themes.spec.ts frontend/lib/mock/themes.ts frontend/e2e/foundation.spec.ts)",
+      "Bash(npm run test:e2e -- e2e/phase4-writing-assistant.spec.ts)",
+      "Bash(kill 16894)",
+      "Bash(git add frontend/app/components/ frontend/e2e/phase4-writing-assistant.spec.ts frontend/app/jobs/[jobId]/cover-letter/page.tsx frontend/app/jobs/[jobId]/cv/page.tsx \"frontend/app/jobs/[jobId]/themes/[themeId]/page.tsx\")",
+      "Bash(git add frontend/app/components/ frontend/e2e/phase4-writing-assistant.spec.ts)",
+      "Bash(git add -- \"frontend/app/jobs/[jobId]/cover-letter/page.tsx\" \"frontend/app/jobs/[jobId]/cv/page.tsx\" \"frontend/app/jobs/[jobId]/themes/[themeId]/page.tsx\")",
+      "Bash(npx shadcn@latest add avatar dropdown-menu --yes)",
+      "Bash(npx shadcn@latest add dialog --yes)",
+      "Bash(git add -- frontend/app/layout.tsx frontend/app/components/user-menu.tsx frontend/components/ui/avatar.tsx frontend/components/ui/dialog.tsx frontend/components/ui/dropdown-menu.tsx frontend/public/gabriel-profile.jpg)",
+      "Bash(git push)"
     ],
     "additionalDirectories": [
-      "/Users/gabriel/Documents/job-seeker-assistant/.claude"
+      "/Users/gabriel/Documents/job-seeker-assistant/.claude",
+      "/Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/themes"
     ]
   }
 }

@@ -1,12 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useJobs } from './context/jobs-context'
+import NewJobDialog from './components/new-job-dialog'
 
 export default function JobsList() {
   const { jobs, deleteJob } = useJobs()
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-10">
@@ -17,11 +20,11 @@ export default function JobsList() {
           <p className="mt-1 text-stone-600">Manage your job offer applications</p>
         </div>
         <Button
-          asChild
+          onClick={() => setDialogOpen(true)}
           style={{ backgroundColor: '#4a5c2f' }}
           className="text-white hover:opacity-90"
         >
-          <Link href="/jobs/new">+ Add Job Offer</Link>
+          + Add Job Offer
         </Button>
       </div>
 
@@ -30,11 +33,11 @@ export default function JobsList() {
         <div className="rounded-lg border border-stone-200 bg-white px-6 py-16 text-center">
           <p className="text-stone-600">No job offers yet.</p>
           <Button
-            asChild
+            onClick={() => setDialogOpen(true)}
             className="mt-4 text-white hover:opacity-90"
             style={{ backgroundColor: '#4a5c2f' }}
           >
-            <Link href="/jobs/new">Add your first job offer</Link>
+            Add your first job offer
           </Button>
         </div>
       ) : (
@@ -107,6 +110,8 @@ export default function JobsList() {
           </table>
         </div>
       )}
+
+      <NewJobDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )
 }

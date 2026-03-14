@@ -8,8 +8,7 @@ import {
   useState,
 } from 'react'
 import type { Job } from '@/lib/mock/jobs'
-
-const STORAGE_KEY = 'escribe-jobs'
+import { jobsService } from '@/lib/services/jobs-service'
 
 interface JobsContextValue {
   jobs: Job[]
@@ -31,20 +30,16 @@ export function JobsProvider({
   const [jobs, setJobs] = useState<Job[]>(() => {
     if (typeof window === 'undefined') return initialJobs
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = localStorage.getItem('escribe-jobs')
       return stored ? (JSON.parse(stored) as Job[]) : initialJobs
     } catch {
       return initialJobs
     }
   })
 
-  // Keep localStorage in sync whenever jobs change.
+  // Keep storage in sync whenever jobs change.
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs))
-    } catch {
-      // localStorage unavailable — silently ignore
-    }
+    jobsService.save(jobs)
   }, [jobs])
 
   const addJob = useCallback((job: Job) => {

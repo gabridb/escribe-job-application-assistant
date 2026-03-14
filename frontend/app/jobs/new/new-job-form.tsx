@@ -1,12 +1,24 @@
 'use client'
 
+import { useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNewJob } from './hooks/use-new-job'
 
 export default function NewJobForm() {
+  const router = useRouter()
   const { description, setDescription, isSubmitting, handleSubmit } =
-    useNewJob()
+    useNewJob(() => router.push('/'))
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setDescription(reader.result as string)
+    reader.readAsText(file)
+  }
 
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-10">
@@ -48,18 +60,28 @@ export default function NewJobForm() {
               <div className="h-px flex-1 bg-stone-200" />
             </div>
 
-            {/* File upload (V1: UI only, non-functional) */}
+            {/* File upload */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-stone-900">Upload File</p>
-              <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center">
+              <div
+                className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-stone-300 bg-stone-50 px-6 py-10 text-center cursor-pointer hover:bg-stone-100 transition-colors"
+                onClick={() => inputRef.current?.click()}
+              >
                 <Upload size={24} className="text-stone-400" />
                 <p className="text-sm text-stone-600">
                   Click to upload or drag and drop
                 </p>
                 <p className="text-xs text-stone-400">
-                  PDF, DOC, DOCX or TXT (max. 10MB)
+                  PDF, DOC, DOCX, TXT or MD (max. 10MB)
                 </p>
               </div>
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.txt,.md"
+                className="hidden"
+                onChange={handleFileChange}
+              />
             </div>
 
             {/* Submit */}
