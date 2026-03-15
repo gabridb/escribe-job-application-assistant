@@ -13,6 +13,7 @@ import { jobsService } from '@/lib/services/jobs-service'
 interface JobsContextValue {
   jobs: Job[]
   addJob: (job: Job) => void
+  updateJob: (id: string, patch: Partial<Job>) => void
   deleteJob: (id: string) => void
 }
 
@@ -25,17 +26,18 @@ export function JobsProvider({
   initialJobs: Job[]
   children: React.ReactNode
 }) {
-  // Initialise from localStorage if it exists, otherwise fall back to the
-  // seed data passed from the server.
-  const [jobs, setJobs] = useState<Job[]>(() => {
-    if (typeof window === 'undefined') return initialJobs
+  // Always start with server-provided data to match SSR output, then hydrate
+  // from localStorage on the client in an effect to avoid hydration mismatch.
+  const [jobs, setJobs] = useState<Job[]>(initialJobs)
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem('escribe-jobs')
-      return stored ? (JSON.parse(stored) as Job[]) : initialJobs
+      if (stored) setJobs(JSON.parse(stored) as Job[])
     } catch {
-      return initialJobs
+      // localStorage unavailable — keep initialJobs
     }
-  })
+  }, [])
 
   // Keep storage in sync whenever jobs change.
   useEffect(() => {
@@ -46,12 +48,16 @@ export function JobsProvider({
     setJobs((prev) => [job, ...prev])
   }, [])
 
+  const updateJob = useCallback((id: string, patch: Partial<Job>) => {
+    setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j)))
+  }, [])
+
   const deleteJob = useCallback((id: string) => {
     setJobs((prev) => prev.filter((j) => j.id !== id))
   }, [])
 
   return (
-    <JobsContext.Provider value={{ jobs, addJob, deleteJob }}>
+    <JobsContext.Provider value={{ jobs, addJob, updateJob, deleteJob }}>
       {children}
     </JobsContext.Provider>
   )

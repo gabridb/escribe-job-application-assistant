@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useJobs } from '@/app/context/jobs-context'
+import { useThemes } from '@/app/context/themes-context'
+import type { ThemeStatus } from '@/lib/mock/themes'
 
 interface Props {
   jobId: string
@@ -10,31 +12,70 @@ interface Props {
 
 export default function ProcessingScreen({ jobId }: Props) {
   const router = useRouter()
-  const { jobs } = useJobs()
+  const { jobs, updateJob } = useJobs()
+  const { addThemes } = useThemes()
   const job = jobs.find((j) => j.id === jobId)
 
-  // visibleStep: how many steps are currently shown (0–5)
   const [visibleStep, setVisibleStep] = useState(0)
-  // doneStep: how many steps have the checkmark (vs spinner)
   const [doneStep, setDoneStep] = useState(0)
+  const [resolvedTitle, setResolvedTitle] = useState<string | null>(null)
+  const [resolvedCompany, setResolvedCompany] = useState<string | null>(null)
+  const [themeCount, setThemeCount] = useState<number | null>(null)
+
+  const called = useRef(false)
 
   useEffect(() => {
-    const timers = [
-      setTimeout(() => { setVisibleStep(1); setDoneStep(1) }, 400),
-      setTimeout(() => { setVisibleStep(2); setDoneStep(2) }, 900),
-      setTimeout(() => { setVisibleStep(3); setDoneStep(3) }, 1400),
-      setTimeout(() => { setVisibleStep(4) }, 1900),          // spinner for step 4
-      setTimeout(() => { setDoneStep(4); setVisibleStep(5) }, 2800), // checkmark
-      setTimeout(() => router.push('/'), 3200),
-    ]
-    return () => timers.forEach(clearTimeout)
-  }, [router])
+    if (!job || called.current) return
+    called.current = true
+
+    setVisibleStep(1)
+    setDoneStep(1)
+
+    fetch('/api/analyze-job', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: job.description }),
+    })
+      .then((r) => r.json())
+      .then((data: { title: string; company: string; themes: { name: string; description: string }[] }) => {
+        const { title, company, themes } = data
+
+        setResolvedTitle(title)
+        setVisibleStep(2)
+        setDoneStep(2)
+
+        setResolvedCompany(company)
+        setVisibleStep(3)
+        setDoneStep(3)
+
+        setThemeCount(themes.length)
+        setVisibleStep(4)
+
+        updateJob(jobId, { title, company })
+        addThemes(
+          themes.map((t, i) => ({
+            id: `${jobId}-theme-${i + 1}`,
+            jobId,
+            name: t.name,
+            description: t.description,
+            status: 'todo' as ThemeStatus,
+          })),
+        )
+
+        setDoneStep(4)
+        setTimeout(() => router.push('/'), 600)
+      })
+      .catch((err) => {
+        console.error('analyze-job failed:', err)
+        router.push('/')
+      })
+  }, [job, jobId, updateJob, addThemes, router])
 
   const steps = [
     { label: 'Job description received' },
-    { label: `Title: ${job?.title ?? '…'}` },
-    { label: `Company: ${job?.company ?? '…'}` },
-    { label: 'Generating interview themes…', doneLabel: '4 themes identified' },
+    { label: `Title: ${resolvedTitle ?? '…'}` },
+    { label: `Company: ${resolvedCompany ?? '…'}` },
+    { label: 'Generating interview themes…', doneLabel: themeCount !== null ? `${themeCount} themes identified` : 'Themes identified' },
   ]
 
   return (
