@@ -1,16 +1,3 @@
-Estoy implemementando el siguiente user journey:
-1. Click en el botón "Add Job Offer"
-2. Se sube un job offer en formato md
-3. La IA analiza el archivo y extrae los metadatos para presentarlos en el dashboard y los Key Themes
-4. /jobs/job-n/themes muestra los themes de la nueva job offer
-
-Siguiente paso: 3. La IA analiza el archivo y extrae los metadatos para presentarlos en el dashboard y los Key Themes. 
-
-Implementar un modelo gratuito de ia en el backend usando la api de openrouter
-
-Después: guardar la información en una base de datos postgreSQL en un docket
-
-
 # Escribe — Build Progress
 
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.
@@ -109,6 +96,32 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 - [ ] Dashboard sin jobs → mensaje de empty state visible y útil
 - [ ] Crear un job, recargar la página → el job sigue ahí
 - [ ] Intentar enviar el formulario vacío → aparecen mensajes de error en los campos
+
+---
+
+## Phase 6 — Real AI Integration (localStorage se mantiene)
+
+Estado: localStorage sigue siendo la capa de persistencia. El objetivo es conectar el backend con OpenRouter para reemplazar las respuestas mockeadas.
+
+- ⬜ **NestJS recibe mensajes de chat** → `POST /api/chat` acepta `{ message, context }` y devuelve una respuesta de texto (sin streaming por ahora)
+- ⬜ **OpenRouter integrado** → el backend llama a OpenRouter con el mensaje del usuario y devuelve la respuesta real de la IA
+- ⬜ **Writing Assistant usa el endpoint real** → el frontend llama a `/api/chat` en vez de devolver la respuesta mockeada
+- ⬜ **Análisis de job al crear** → `POST /api/analyze-job` recibe el texto del job description y devuelve título, empresa y lista de themes generados por IA; el frontend los guarda en localStorage como hasta ahora
+
+**Test manual al completar la fase:**
+- [ ] Enviar un mensaje en el Writing Assistant → la respuesta viene de la IA real (no del mock)
+- [ ] Crear un job pegando un job description real → el título, empresa y themes los genera la IA
+- [ ] Los themes tienen sentido para el rol descrito
+
+---
+
+## Phase 7 — Backend + PostgreSQL (deferred)
+
+_Pendiente de implementar cuando se quiera reemplazar localStorage con persistencia real._
+
+- ⬜ Docker + PostgreSQL corriendo
+- ⬜ NestJS CRUD API para jobs, themes y experiences
+- ⬜ Frontend services apuntan al backend en vez de localStorage
 
 ---
 

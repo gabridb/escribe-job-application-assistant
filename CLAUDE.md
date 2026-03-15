@@ -21,17 +21,25 @@ Key concepts (see Glossary in PRD):
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
 | UI components | shadcn/ui |
 | Backend | NestJS 11, TypeScript |
+| Database | PostgreSQL (Docker) |
+| AI | OpenRouter API (small/cheap models, e.g. `mistralai/mistral-7b-instruct`) |
 | Testing | Playwright (E2E) |
 | Dev | `npm run dev` — runs both frontend and backend concurrently |
 
-## V1 Scope: Frontend Only
+## Current Scope: V2 — Real AI + Backend
 
-- All AI capabilities are **mocked** — no real API calls in v1
-- No backend persistence — state lives in memory / localStorage
-- No file parsing — raw text input only for CV and job descriptions
-- No auth
+V1 (frontend-only with mocked AI) is complete. V2 activates the backend and real AI.
 
-Focus: build all UI screens and interactions with hardcoded mock data and responses.
+**V2 goals:**
+- Real AI calls via **OpenRouter** (cheap/fast models — API key lives server-side only)
+- **PostgreSQL** in Docker replaces localStorage as the persistence layer
+- NestJS backend API: the frontend services layer swaps `localStorage` for `fetch('/api/...')`
+- No auth — single-user app
+
+**Still out of scope:**
+- File parsing (PDF/DOCX) — raw text input only
+- Mobile layout
+- Export to PDF/DOCX
 
 ## Routes
 
@@ -128,36 +136,41 @@ Each phase ends with a manual test checklist defined in `Specs/PROGRESS.md`. Aft
 ## Frontend vs Backend Responsibilities
 
 ### Frontend owns
-- All UI rendering, routing, and client state (React Context + localStorage)
+- All UI rendering, routing, and client state (React Context)
 - Form validation and presentational logic
 - The Writing Assistant UI — chat input, message rendering, rich text editor
-- **In v1**: mocked AI responses (hardcoded, no network calls)
-- **In v2**: sends user messages to the backend and streams responses back
+- Sends user messages to the backend and streams responses back
 
 ### Backend owns
-- Data persistence (database — source of truth for all resources)
-- **AI orchestration**: receives a chat message from the frontend, constructs the full prompt (injecting job description, CV, experience entries from the DB), calls Claude, and streams the response back
-- Business logic with side effects (e.g. generating themes from a job description)
-- Auth and API key security (the Claude API key never touches the browser)
+- Data persistence (PostgreSQL — source of truth for all resources)
+- **AI orchestration**: receives a chat message from the frontend, constructs the full prompt (injecting job description, CV, experience entries from the DB), calls OpenRouter, and streams the response back
+- Business logic with side effects (e.g. generating themes from a job description, extracting job metadata)
+- API key security (the OpenRouter API key never touches the browser)
 
 ### The seam: `frontend/lib/services/`
 
 Each service file is a thin abstraction over the persistence layer:
 
 ```
-Component → Context → service.getAll() → [localStorage NOW | fetch('/api/...') LATER]
-                                                  ↑
-                                         only this changes in v2
+Component → Context → service.getAll() → fetch('/api/...')  →  NestJS  →  PostgreSQL
 ```
 
-When the backend is ready, swap the `localStorage` calls in services for `fetch` calls — no component code changes.
+The services call the backend API. No localStorage for domain data in v2.
 
-### AI call flow (v2)
+### AI call flow
 
 ```
-Browser → POST /api/chat  →  NestJS  →  Claude API
-                    ↑ enriched with DB context (job, CV, themes)
-          ← streaming response ←←←←←←←←←←←←←←←←←←
+Browser → POST /api/chat  →  NestJS ChatService  →  OpenRouter API
+                    ↑ prompt enriched with DB context (job, CV, themes, experiences)
+          ← streaming response (SSE) ←←←←←←←←←←←←←←←←←←←←←←←←←←←
+```
+
+### AI-triggered flows (backend-initiated, no user chat)
+
+```
+POST /api/jobs  →  NestJS JobsService  →  OpenRouter (extract metadata + generate themes)
+                                       →  saves Job + Themes to PostgreSQL
+                                       ←  returns job with themes
 ```
 
 ---
@@ -171,9 +184,16 @@ Browser → POST /api/chat  →  NestJS  →  Claude API
 │   └── e2e/          # Playwright tests (one file per MTI)
 ├── backend/
 │   └── src/
+│       ├── jobs/     # jobs module (controller, service, DTOs)
+│       ├── themes/   # themes module
+│       ├── experience/
+│       ├── cv/
+│       └── chat/     # AI streaming endpoint
+├── docker-compose.yml  # PostgreSQL + (future) backend container
 ├── Specs/
 │   ├── PRD.md        # Product requirements (source of truth)
 │   ├── PROGRESS.md   # MTI tracker
 │   └── designs/      # UI design references (PNG screenshots)
 ├── CLAUDE.md         # This file
 └── DECISIONS.md      # Technical decision log
+```

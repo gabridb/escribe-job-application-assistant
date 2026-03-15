@@ -1,9 +1,9 @@
 # Product Requirements Document — Escribe
 ### AI-Powered Job Application Assistant
 
-**Version**: 1.0
-**Date**: 2026-03-14
-**Status**: Draft
+**Version**: 2.0
+**Date**: 2026-03-15
+**Status**: In Progress — V2 (real AI + backend)
 
 ---
 
@@ -252,21 +252,23 @@ Used on the Key Interview Themes list:
 
 ---
 
-## 10. Out of Scope (v1)
+## 10. Scope
 
-### Frontend only
+### In scope (V2 — current)
+- Real AI via **OpenRouter** (backend-side API calls, key never reaches browser)
+- **PostgreSQL** database for all persistence — replaces localStorage
+- NestJS REST API consumed by the frontend services layer
+- AI-powered job analysis: extract title, company, and Key Interview Themes from pasted job description
+- AI-powered Writing Assistant chat: responses grounded in job description + user CV
+
+### Out of scope (still deferred)
 - Mobile layout
 - Export to PDF / DOCX
 - Application status tracking (e.g., "Applied", "Interview scheduled")
 - CV alignment score / skills gap visualisation
 - Version history / diff comparison
-
-### Backend / infrastructure (deferred)
-- Real AI integration — all AI capabilities are mocked in v1 with hardcoded or static responses; real Claude API calls are implemented in a later phase
-- File parsing — CV and job description uploads are accepted but text extraction (PDF, DOCX) is stubbed; raw text input is the primary path for v1
-- Persistent storage / database — app state lives in memory or localStorage; no backend API or database in v1
+- File parsing (PDF/DOCX) — raw text input only
 - User authentication / multi-user accounts
-- Semantic matching of themes against the Experience Library — mocked with simple string matching or hardcoded suggestions in v1
 
 ---
 
