@@ -97,6 +97,24 @@ app/context/
 └── themes-context.tsx    ← ThemesProvider + useThemes
 ```
 
+### Backend: Prompt / Transport Decoupling
+
+Every backend AI feature uses a two-file split inside its module:
+
+| File | Responsibility |
+|------|---------------|
+| `*.prompts.ts` | Pure functions that build prompt strings. No NestJS, no HTTP, no side effects. |
+| `*.service.ts` | Transport only — calls OpenRouter, returns parsed result. No prompt logic. |
+
+```
+chat.prompts.ts  →  buildSystemPrompt(context, jobDescription?, cvText?) → string
+chat.service.ts  →  calls OpenRouter with the built prompt → returns reply string
+```
+
+This keeps prompt engineering separate from HTTP transport so prompts are easy to read, iterate, and test independently.
+
+---
+
 ## Testing Strategy
 
 ### Playwright E2E

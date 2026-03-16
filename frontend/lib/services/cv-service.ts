@@ -12,6 +12,7 @@ export interface CvDocument {
 const STORAGE_KEY = 'escribe-cv'
 
 export const cvService = {
+  
   async save(cv: CvDocument): Promise<void> {
     // TODO(backend): POST /api/cv  →  body: cv
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cv))

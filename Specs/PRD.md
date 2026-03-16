@@ -128,6 +128,19 @@ Dashboard — Job Offers list
 
 **Purpose**: Help the user write and refine a real-life example that demonstrates the theme.
 
+**Workflow — STAR coaching loop**:
+
+1. User writes a rough brain dump in the editor — just the story, no structure needed
+2. User sends the draft to the AI ("review my draft") or the AI picks it up automatically
+3. AI reads the draft and gives STAR-specific feedback (e.g. *"You have a clear Situation and Action, but Task is missing and your Result needs a measurable outcome"*)
+4. User refines based on feedback; repeat until the example is complete
+
+The AI operates in two modes depending on editor state:
+- **Coach mode** (empty editor) — AI asks STAR questions one at a time to help the user surface a story
+- **Reviewer mode** (draft exists) — AI critiques the draft against the STAR structure and suggests targeted improvements
+
+The AI always has access to the editor content, the theme description, and the job description when generating feedback.
+
 ---
 
 ### 3.6 Writing Assistant — Cover Letter

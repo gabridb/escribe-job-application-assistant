@@ -14,6 +14,9 @@ export default async function RelevantExperiencePage({
       themeId={themeId}
       title="Relevant Experience"
       subtitle="Write your example for this theme"
+      suggestedReplies={[
+        { label: 'Review my draft', message: 'Please review my draft' },
+      ]}
     />
   )
 }

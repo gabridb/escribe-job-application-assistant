@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { useWritingAssistant, WritingContext } from './hooks/use-writing-assistant'
+import { useWritingAssistant, WritingContext, SuggestedReply } from './hooks/use-writing-assistant'
 import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
+import { Button } from '@/components/ui/button'
 
 interface WritingAssistantProps {
   context: WritingContext
@@ -11,6 +12,7 @@ interface WritingAssistantProps {
   themeId?: string
   title: string
   subtitle: string
+  suggestedReplies?: SuggestedReply[]
 }
 
 export default function WritingAssistant({
@@ -19,6 +21,7 @@ export default function WritingAssistant({
   themeId,
   title,
   subtitle,
+  suggestedReplies,
 }: WritingAssistantProps) {
   const { themes } = useThemes()
   const { jobs } = useJobs()
@@ -26,10 +29,9 @@ export default function WritingAssistant({
   const job = jobs.find((j) => j.id === jobId)
   if (job) subtitle = `${job.title} @ ${job.company}`
 
-  if (themeId) {
-    const theme = themes.find((t) => t.id === themeId)
-    if (theme) title = theme.name
-  }
+  const theme = themeId ? themes.find((t) => t.id === themeId) : undefined
+  if (theme) title = theme.name
+
   const {
     messages,
     input,
@@ -37,7 +39,14 @@ export default function WritingAssistant({
     editorContent,
     setEditorContent,
     sendMessage,
-  } = useWritingAssistant(context)
+    sendPredefinedMessage,
+    isLoading,
+  } = useWritingAssistant(
+    context,
+    job?.description,
+    theme?.name,
+    theme?.description,
+  )
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -56,8 +65,8 @@ export default function WritingAssistant({
       {/* Title bar */}
       <div className="flex items-center justify-between py-4 px-6 border-b border-stone-200 bg-white">
         <div>
-          <h1 className="text-xl font-semibold text-stone-900">{title}</h1>
-          <p className="text-sm text-stone-600 mt-0.5">{subtitle}</p>
+          <h1 className="text-xl font-semibold text-stone-900" suppressHydrationWarning>{title}</h1>
+          <p className="text-sm text-stone-600 mt-0.5" suppressHydrationWarning>{subtitle}</p>
         </div>
         <button className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors">
           Save
@@ -83,15 +92,54 @@ export default function WritingAssistant({
                     <span className="inline-block mb-1 px-1.5 py-0.5 rounded text-xs font-medium bg-cyan-100 text-cyan-700">
                       AI
                     </span>
-                    <div className="px-3 py-2 rounded-lg bg-cyan-50 border border-cyan-100 text-sm text-stone-800">
+                    <div className="px-3 py-2 rounded-lg bg-cyan-50 border border-cyan-100 text-sm text-stone-800 whitespace-pre-wrap">
                       {message.content}
                     </div>
                   </div>
                 </div>
               )
             )}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%]">
+                  <span className="inline-block mb-1 px-1.5 py-0.5 rounded text-xs font-medium bg-cyan-100 text-cyan-700">
+                    AI
+                  </span>
+                  <div className="px-3 py-2 rounded-lg bg-cyan-50 border border-cyan-100 text-sm text-stone-400">
+                    Thinking…
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Suggested replies — pinned above input, hidden once conversation starts */}
+          {suggestedReplies &&
+            !messages.some((m) => m.role === 'user') &&
+            editorContent.trim().split(/\s+/).filter(Boolean).length >= 10 && (
+            <div className="px-3 py-3 bg-stone-50 border-t border-stone-200">
+              <div className="rounded-lg border border-stone-200 bg-white p-3 flex flex-col gap-2 shadow-sm">
+                <p className="text-sm font-medium text-stone-700">
+                  Ready to review your draft against the STAR framework?
+                </p>
+                <div className="flex flex-col gap-1">
+                  {suggestedReplies.map((reply) => (
+                    <Button
+                      key={reply.label}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendPredefinedMessage(reply.message)}
+                      disabled={isLoading}
+                      className="w-full justify-start"
+                    >
+                      {reply.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Input bar */}
           <div className="border-t border-stone-200 p-3 bg-white flex flex-col gap-1">
@@ -101,12 +149,14 @@ export default function WritingAssistant({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                disabled={isLoading}
                 placeholder="Ask AI to modify your document..."
-                className="flex-1 rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#4a5c2f]/40"
+                className="flex-1 rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#4a5c2f]/40 disabled:opacity-50"
               />
               <button
                 onClick={sendMessage}
-                className="px-3 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors"
+                disabled={isLoading}
+                className="px-3 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors disabled:opacity-50"
               >
                 Send
               </button>
