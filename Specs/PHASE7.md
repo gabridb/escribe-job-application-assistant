@@ -81,33 +81,39 @@ backend/src/jobs/jobs.service.ts                    ← Add DB persistence (find
 backend/src/jobs/jobs.controller.ts                 ← Full CRUD routes (replaces analyze-job)
 frontend/lib/services/jobs-service.ts               ← localStorage → fetch
 frontend/lib/services/cv-service.ts                 ← localStorage → fetch
-frontend/app/context/jobs-context.tsx               ← Remove localStorage, add syncJobFromDb()
+frontend/app/context/jobs-context.tsx               ← Remove localStorage, add updateThemeStatus()
 frontend/app/context/themes-context.tsx             ← Remove localStorage, add updateThemeStatus()
 frontend/app/layout.tsx                             ← async; fetch jobs from backend at SSR
-frontend/app/jobs/[jobId]/processing/               ← Call POST /api/jobs, handle real UUIDs
-  processing-screen.tsx
+frontend/app/jobs/new/hooks/use-new-job.ts          ← POST /api/jobs, loading state, navigate to real UUID
+frontend/app/jobs/new/new-job-form.tsx              ← Spinner on submit button while loading
 frontend/app/jobs/[jobId]/themes/page.tsx            ← Fetch themes from GET /api/jobs/:id/themes
+```
+
+### Deleted files
+
+```
+frontend/app/jobs/[jobId]/processing/processing-screen.tsx   ← replaced by inline spinner
+frontend/app/jobs/[jobId]/processing/page.tsx                ← route no longer needed
 ```
 
 ---
 
 ## Key Design Decisions
 
-### Processing screen flow (unchanged UX, updated endpoint)
+### Add Job flow — inline spinner, no processing screen
 
-The animated processing screen keeps its existing UX. It now calls `POST /api/jobs` instead of `POST /api/analyze-job`. The response includes the real DB-generated UUID for the job and themes. The screen uses a new `syncJobFromDb(tempId, realJob)` context method to swap the placeholder job (created by `use-new-job.ts`) with the real one.
+The processing screen is removed. The form submits, shows a spinner on the button, waits for the backend, then navigates directly to the real job URL. No placeholder jobs, no temp IDs, no context swap needed.
 
 ```
-use-new-job.ts
-  → adds placeholder job to context (temp ID like job-1234567)
-  → navigates to /jobs/[tempId]/processing
+new-job-form.tsx
+  → user clicks submit → button shows spinner, form disabled
 
-processing-screen.tsx
+use-new-job.ts
   → POST /api/jobs { description }
   → backend: AI analysis + save to DB → returns { id (uuid), title, company, themes[] }
-  → syncJobFromDb(tempId, realJob)  ← swaps placeholder with real job in context
-  → addThemes(themes)               ← themes now have real UUIDs
-  → redirect to /
+  → addJob(job)      ← real UUID from DB
+  → addThemes(themes) ← real UUIDs from DB
+  → navigate to /jobs/[id]/themes
 ```
 
 ### Themes context — no global preload
@@ -138,11 +144,12 @@ Only one CV is stored at a time. `cvService.save()` calls `cvRepo.clear()` befor
 10. Smoke-test backend with curl
 11. Create `frontend/.env.local`
 12. Update `jobs-service.ts` and `cv-service.ts`
-13. Update `jobs-context.tsx` (add `syncJobFromDb`, remove localStorage)
+13. Update `jobs-context.tsx` (remove localStorage)
 14. Update `themes-context.tsx` (remove localStorage, add `updateThemeStatus`)
 15. Update `layout.tsx` (async + real fetch)
-16. Update `processing-screen.tsx`
-17. Update `themes/page.tsx`
+16. Update `use-new-job.ts` + `new-job-form.tsx` (spinner, real API call)
+17. Delete processing screen route
+18. Update `themes/page.tsx`
 
 ---
 
@@ -151,7 +158,7 @@ Only one CV is stored at a time. `cvService.save()` calls `cvRepo.clear()` befor
 - [ ] `docker compose ps` → postgres container healthy
 - [ ] `curl -X POST http://localhost:3001/api/jobs -d '{"description":"test"}'` returns job with UUID + themes
 - [ ] `curl http://localhost:3001/api/jobs` returns array
-- [ ] Browser: add a job → processing animation → redirects to dashboard → job visible
+- [ ] Browser: add a job → spinner on button → redirects to themes page → job visible on dashboard
 - [ ] Hard refresh → job still there (not localStorage)
 - [ ] Navigate to `/jobs/:id/themes` → themes load
 - [ ] Upload CV → reload → CV persists
