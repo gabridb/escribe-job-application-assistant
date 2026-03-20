@@ -1,37 +1,43 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useJobs } from '@/app/context/jobs-context'
-import type { Job } from '@/lib/mock/jobs'
+import { useThemes } from '@/app/context/themes-context'
+import { jobsService } from '@/lib/services/jobs-service'
 
 interface UseNewJobReturn {
   description: string
   setDescription: (value: string) => void
   handleSubmit: (e: React.FormEvent) => void
-  submitWithText: (text: string) => void
+  isLoading: boolean
 }
 
 export function useNewJob(onSuccess?: (jobId: string) => void): UseNewJobReturn {
-  const [description, setDescription] = useState('')
+  const router = useRouter()
   const { addJob } = useJobs()
+  const { addThemes } = useThemes()
+  const [description, setDescription] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const submitWithText = useCallback(
-    (text: string) => {
-      if (!text.trim()) return
-
-      const newJob: Job = {
-        id: `job-${Date.now()}`,
-        title: 'Analysing…',
-        company: 'Analysing…',
-        description: text,
-        status: 'active',
-        createdAt: new Date().toISOString().slice(0, 10),
+    async (text: string) => {
+      if (!text.trim() || isLoading) return
+      setIsLoading(true)
+      try {
+        const result = await jobsService.create(text.trim())
+        addJob(result)
+        addThemes(result.themes)
+        if (onSuccess) {
+          onSuccess(result.id)
+        } else {
+          router.push(`/jobs/${result.id}/themes`)
+        }
+      } finally {
+        setIsLoading(false)
       }
-
-      addJob(newJob)
-      onSuccess?.(newJob.id)
     },
-    [addJob, onSuccess],
+    [addJob, addThemes, isLoading, onSuccess, router],
   )
 
   const handleSubmit = useCallback(
@@ -42,5 +48,5 @@ export function useNewJob(onSuccess?: (jobId: string) => void): UseNewJobReturn 
     [description, submitWithText],
   )
 
-  return { description, setDescription, handleSubmit, submitWithText }
+  return { description, setDescription, handleSubmit, isLoading }
 }

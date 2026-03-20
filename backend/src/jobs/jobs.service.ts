@@ -1,30 +1,79 @@
-import { Injectable } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { ANALYZE_JOB_MODEL, buildAnalyzeJobPrompt } from './jobs.prompts'
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { Job } from './job.entity';
+import { Theme } from '../themes/theme.entity';
+import { ANALYZE_JOB_MODEL, buildAnalyzeJobPrompt } from './jobs.prompts';
 
-export interface Theme {
-  name: string
-  description: string
+export interface ThemeData {
+  name: string;
+  description: string;
 }
 
 export interface AnalyzeJobResult {
-  title: string
-  company: string
-  themes: Theme[]
+  title: string;
+  company: string;
+  themes: ThemeData[];
 }
 
 @Injectable()
 export class JobsService {
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    @InjectRepository(Job)
+    private jobRepo: Repository<Job>,
+    @InjectRepository(Theme)
+    private themeRepo: Repository<Theme>,
+    private configService: ConfigService,
+  ) {}
 
-  async analyzeJob(description: string): Promise<AnalyzeJobResult> {
-    const apiKey = this.config.get<string>('OPENROUTER_API_KEY')
+  findAll(): Promise<Job[]> {
+    return this.jobRepo.find({ order: { createdAt: 'DESC' } });
+  }
+
+  findOne(id: string): Promise<Job | null> {
+    return this.jobRepo.findOne({ where: { id } });
+  }
+
+  async createJob(description: string): Promise<Job & { themes: Theme[] }> {
+    const analysis = await this.analyzeJob(description);
+
+    const job = this.jobRepo.create({
+      title: analysis.title || 'Untitled Role',
+      company: analysis.company || 'Unknown Company',
+      description,
+      status: 'active',
+    });
+    const savedJob = await this.jobRepo.save(job);
+
+    const themes = await Promise.all(
+      analysis.themes.map((t) =>
+        this.themeRepo.save(
+          this.themeRepo.create({
+            jobId: savedJob.id,
+            name: t.name,
+            description: t.description,
+            status: 'todo',
+          }),
+        ),
+      ),
+    );
+
+    return { ...savedJob, themes };
+  }
+
+  async deleteJob(id: string): Promise<void> {
+    await this.jobRepo.delete(id);
+  }
+
+  private async analyzeJob(description: string): Promise<AnalyzeJobResult> {
+    const apiKey = this.configService.get<string>('OPENROUTER_API_KEY');
     if (!apiKey) {
-      console.warn('OPENROUTER_API_KEY not set — returning empty result')
-      return { title: 'Untitled Role', company: 'Unknown Company', themes: [] }
+      console.warn('OPENROUTER_API_KEY not set — returning empty result');
+      return { title: 'Untitled Role', company: 'Unknown Company', themes: [] };
     }
 
-    const prompt = buildAnalyzeJobPrompt(description)
+    const prompt = buildAnalyzeJobPrompt(description);
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -37,26 +86,26 @@ export class JobsService {
         response_format: { type: 'json_object' },
         messages: [{ role: 'user', content: prompt }],
       }),
-    })
+    });
 
     if (!response.ok) {
-      console.error('OpenRouter error:', response.status, await response.text())
-      return { title: 'Untitled Role', company: 'Unknown Company', themes: [] }
+      console.error('OpenRouter error:', response.status, await response.text());
+      return { title: 'Untitled Role', company: 'Unknown Company', themes: [] };
     }
 
-    const data = await response.json() as { choices: { message: { content: string } }[] }
-    const content = data.choices?.[0]?.message?.content ?? ''
+    const data = await response.json() as { choices: { message: { content: string } }[] };
+    const content = data.choices?.[0]?.message?.content ?? '';
 
     try {
-      const parsed = JSON.parse(content) as AnalyzeJobResult
+      const parsed = JSON.parse(content) as AnalyzeJobResult;
       return {
         title: parsed.title ?? 'Untitled Role',
         company: parsed.company ?? 'Unknown Company',
         themes: Array.isArray(parsed.themes) ? parsed.themes : [],
-      }
+      };
     } catch {
-      console.error('Failed to parse OpenRouter response:', content)
-      return { title: 'Untitled Role', company: 'Unknown Company', themes: [] }
+      console.error('Failed to parse OpenRouter response:', content);
+      return { title: 'Untitled Role', company: 'Unknown Company', themes: [] };
     }
   }
 }

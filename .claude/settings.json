@@ -45,11 +45,27 @@
       "Bash(grep -r \"DATABASE\\\\|DB_\\\\|POSTGRES\" /home/gabriel/dev/escribe-job-application-assistant --include=*.md --include=*.json)",
       "Bash(lsb_release -a)",
       "Read(//usr/lib/**)",
-      "Bash(sudo apt-get:*)"
+      "Bash(sudo apt-get:*)",
+      "Bash(ls -la /home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/)",
+      "Bash(ls -la /home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/themes/)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(ls -la /home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/[themeId]/)",
+      "Bash(ls -la /home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/themes/[themeId]/)",
+      "Bash(ls -la /home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/cover-letter/)",
+      "Bash(ls -la /home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/cv/)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(docker compose:*)"
     ],
     "additionalDirectories": [
       "/Users/gabriel/Documents/job-seeker-assistant/.claude",
-      "/Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/themes"
+      "/Users/gabriel/Documents/job-seeker-assistant/frontend/app/jobs/[jobId]/themes",
+      "/home/gabriel/dev/escribe-job-application-assistant/frontend/app/jobs/[jobId]/processing/"
     ]
   }
 }

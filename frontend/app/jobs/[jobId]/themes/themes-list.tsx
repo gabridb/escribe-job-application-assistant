@@ -1,9 +1,14 @@
 'use client'
+
+import { useEffect, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
+import type { Theme } from '@/lib/mock/themes'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 const statusLabel: Record<string, string> = {
   done: 'Done',
@@ -17,9 +22,22 @@ const statusClass: Record<string, string> = {
 }
 
 export default function ThemesList({ jobId }: { jobId: string }) {
-  const { themes } = useThemes()
+  const { themes, loadThemes } = useThemes()
   const { jobs } = useJobs()
   const job = jobs.find(j => j.id === jobId)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(true)
+    fetch(`${API_URL}/api/jobs/${jobId}/themes`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((fetched: Theme[]) => {
+        loadThemes(fetched)
+        setIsLoading(false)
+      })
+      .catch(() => setIsLoading(false))
+  }, [jobId, loadThemes])
+
   const jobThemes = themes.filter(t => t.jobId === jobId)
 
   return (
@@ -29,7 +47,9 @@ export default function ThemesList({ jobId }: { jobId: string }) {
         <p className="text-stone-500 mt-1">{job.title} @ {job.company}</p>
       )}
       <div className="mt-8 bg-white border border-stone-200 rounded-lg divide-y divide-stone-100">
-        {jobThemes.length === 0 ? (
+        {isLoading ? (
+          <p className="p-6 text-stone-400 text-sm">Loading themes…</p>
+        ) : jobThemes.length === 0 ? (
           <p className="p-6 text-stone-400 text-sm">No themes yet.</p>
         ) : (
           jobThemes.map(theme => (

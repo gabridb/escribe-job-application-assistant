@@ -1,41 +1,38 @@
 import { test, expect } from '@playwright/test'
 
-function seedJob(page: import('@playwright/test').Page, jobId = 'test-job-1') {
-  return page.evaluate((id) => {
-    const job = {
-      id,
-      title: 'Engineering Lead',
-      company: 'Test Corp',
-      description: 'We are looking for an Engineering Lead.',
-      status: 'active',
-      createdAt: '2026-03-18',
-    }
-    const themes = [
-      { id: `${id}-theme-1`, jobId: id, name: 'Leadership', description: 'Lead teams.', status: 'todo' },
-      { id: `${id}-theme-2`, jobId: id, name: 'Problem Solving', description: 'Solve problems.', status: 'todo' },
-    ]
-    localStorage.setItem('escribe-jobs', JSON.stringify([job]))
-    localStorage.setItem('escribe_themes', JSON.stringify(themes))
-  }, jobId)
-}
+const JOB_ID = 'test-job-1'
 
-test('clicking a job navigates to its themes page', async ({ page }) => {
-  await page.goto('/')
-  await seedJob(page)
-  await page.reload()
+const mockThemes = [
+  { id: `${JOB_ID}-theme-1`, jobId: JOB_ID, name: 'Leadership', description: 'Lead teams.', status: 'todo' },
+  { id: `${JOB_ID}-theme-2`, jobId: JOB_ID, name: 'Problem Solving', description: 'Solve problems.', status: 'todo' },
+]
 
-  await page.getByRole('link', { name: /key themes/i }).first().click()
-  await expect(page).toHaveURL(/\/jobs\/.+\/themes/)
+test('themes page renders job themes from backend', async ({ page }) => {
+  // Themes are fetched client-side — page.route intercepts browser requests
+  await page.route(`**/api/jobs/${JOB_ID}/themes`, (route) => route.fulfill({ json: mockThemes }))
+  await page.route('**/api/jobs', (route) => route.fulfill({ json: [] }))
+
+  await page.goto(`/jobs/${JOB_ID}/themes`)
+
+  await expect(page.getByText('Leadership')).toBeVisible({ timeout: 8000 })
+  await expect(page.getByText('Problem Solving')).toBeVisible()
 })
 
-test('adding a new job auto-generates themes', async ({ page }) => {
-  await page.goto('/')
-  await seedJob(page)
-  await page.reload()
+test('navigating to themes page shows Key Interview Themes heading', async ({ page }) => {
+  await page.route(`**/api/jobs/${JOB_ID}/themes`, (route) => route.fulfill({ json: mockThemes }))
+  await page.route('**/api/jobs', (route) => route.fulfill({ json: [] }))
 
-  await page.getByRole('link', { name: /key themes/i }).first().click()
+  await page.goto(`/jobs/${JOB_ID}/themes`)
+
   await expect(page).toHaveURL(/\/jobs\/.+\/themes/)
+  await expect(page.getByRole('heading', { name: 'Key Interview Themes' })).toBeVisible()
+})
 
-  // Themes were generated — all start as "To Do"
-  await expect(page.getByText('To Do').first()).toBeVisible()
+test('themes all start as To Do status', async ({ page }) => {
+  await page.route(`**/api/jobs/${JOB_ID}/themes`, (route) => route.fulfill({ json: mockThemes }))
+  await page.route('**/api/jobs', (route) => route.fulfill({ json: [] }))
+
+  await page.goto(`/jobs/${JOB_ID}/themes`)
+
+  await expect(page.getByText('To Do').first()).toBeVisible({ timeout: 8000 })
 })

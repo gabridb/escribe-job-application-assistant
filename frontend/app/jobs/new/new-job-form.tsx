@@ -1,15 +1,12 @@
 'use client'
 
 import { useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { Upload } from 'lucide-react'
+import { Loader2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNewJob } from './hooks/use-new-job'
 
 export default function NewJobForm() {
-  const router = useRouter()
-  const { description, setDescription, handleSubmit } =
-    useNewJob((jobId) => router.push(`/jobs/${jobId}/processing`))
+  const { description, setDescription, handleSubmit, isLoading } = useNewJob()
   const inputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -47,7 +44,8 @@ export default function NewJobForm() {
                 placeholder="Paste or type a job offer here"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none"
+                disabled={isLoading}
+                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none disabled:opacity-50"
               />
             </div>
 
@@ -88,11 +86,18 @@ export default function NewJobForm() {
             <div className="flex justify-end">
               <Button
                 type="submit"
-                disabled={!description.trim()}
+                disabled={!description.trim() || isLoading}
                 style={{ backgroundColor: '#4a5c2f' }}
                 className="text-white hover:opacity-90 disabled:opacity-50"
               >
-                + Add Job Offer
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analysing...
+                  </>
+                ) : (
+                  '+ Add Job Offer'
+                )}
               </Button>
             </div>
           </form>

@@ -1,31 +1,38 @@
-// CV Service — storage abstraction layer.
-// Currently backed by localStorage. When a backend is ready, replace
-// the localStorage calls below with fetch/API calls; the hook and
-// components above this layer need no changes.
+// CV Service — fetch-based abstraction over the NestJS backend.
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export interface CvDocument {
+  id: string
   name: string
   text: string
   uploadedAt: string
 }
 
-const STORAGE_KEY = 'escribe-cv'
-
 export const cvService = {
-  
-  async save(cv: CvDocument): Promise<void> {
-    // TODO(backend): POST /api/cv  →  body: cv
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cv))
+  async get(): Promise<CvDocument | null> {
+    try {
+      const res = await fetch(`${API_URL}/api/cv`, { cache: 'no-store' })
+      if (!res.ok) return null
+      return res.json()
+    } catch {
+      return null
+    }
   },
 
-  async get(): Promise<CvDocument | null> {
-    // TODO(backend): GET /api/cv  →  return parsed response body
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as CvDocument) : null
+  async save(cv: { name: string; text: string }): Promise<CvDocument> {
+    const res = await fetch(`${API_URL}/api/cv`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cv),
+    })
+    if (!res.ok) {
+      throw new Error(`Failed to save CV: ${res.status}`)
+    }
+    return res.json()
   },
 
   async remove(): Promise<void> {
-    // TODO(backend): DELETE /api/cv
-    localStorage.removeItem(STORAGE_KEY)
+    await fetch(`${API_URL}/api/cv`, { method: 'DELETE' })
   },
 }

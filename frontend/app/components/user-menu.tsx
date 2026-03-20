@@ -35,7 +35,6 @@ export default function UserMenu() {
         await cvService.save({
           name: file.name,
           text: reader.result as string,
-          uploadedAt: new Date().toISOString(),
         })
         setFileName(file.name)
         setUploadState('success')

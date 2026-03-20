@@ -1,29 +1,44 @@
-// Jobs Service — storage abstraction layer.
-// Currently backed by localStorage. When a backend is ready, replace
-// the localStorage calls below with fetch/API calls; the context and
-// components above this layer need no changes.
+// Jobs Service — fetch-based abstraction over the NestJS backend.
 
 import type { Job } from '@/lib/mock/jobs'
+import type { Theme } from '@/lib/mock/themes'
 
-const STORAGE_KEY = 'escribe-jobs'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export const jobsService = {
   async getAll(): Promise<Job[]> {
-    // TODO(backend): GET /api/jobs  →  return parsed response body
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      return raw ? (JSON.parse(raw) as Job[]) : []
+      const res = await fetch(`${API_URL}/api/jobs`, { cache: 'no-store' })
+      if (!res.ok) return []
+      return res.json()
     } catch {
       return []
     }
   },
 
-  async save(jobs: Job[]): Promise<void> {
-    // TODO(backend): PUT /api/jobs  →  body: jobs
+  async getOne(id: string): Promise<Job | null> {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs))
+      const res = await fetch(`${API_URL}/api/jobs/${id}`, { cache: 'no-store' })
+      if (!res.ok) return null
+      return res.json()
     } catch {
-      // localStorage unavailable — silently ignore
+      return null
     }
+  },
+
+  async create(description: string): Promise<Job & { themes: Theme[] }> {
+    const res = await fetch(`${API_URL}/api/jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    })
+    if (!res.ok) {
+      throw new Error(`Failed to create job: ${res.status}`)
+    }
+    return res.json()
+  },
+
+  async delete(id: string): Promise<void> {
+    await fetch(`${API_URL}/api/jobs/${id}`, { method: 'DELETE' })
   },
 }

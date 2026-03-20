@@ -13,6 +13,8 @@ interface WritingAssistantProps {
   title: string
   subtitle: string
   suggestedReplies?: SuggestedReply[]
+  initialContent?: string
+  onSave?: (text: string) => Promise<void>
 }
 
 export default function WritingAssistant({
@@ -22,6 +24,8 @@ export default function WritingAssistant({
   title,
   subtitle,
   suggestedReplies,
+  initialContent = '',
+  onSave,
 }: WritingAssistantProps) {
   const { themes } = useThemes()
   const { jobs } = useJobs()
@@ -46,9 +50,11 @@ export default function WritingAssistant({
     job?.description,
     theme?.name,
     theme?.description,
+    initialContent,
   )
 
   const [reviewedWordCount, setReviewedWordCount] = useState(0)
+  const [isSaving, setIsSaving] = useState(false)
   const currentWordCount = editorContent.trim().split(/\s+/).filter(Boolean).length
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -63,6 +69,16 @@ export default function WritingAssistant({
     }
   }
 
+  async function handleSave() {
+    if (!onSave || isSaving) return
+    setIsSaving(true)
+    try {
+      await onSave(editorContent)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Title bar */}
@@ -71,9 +87,20 @@ export default function WritingAssistant({
           <h1 className="text-xl font-semibold text-stone-900" suppressHydrationWarning>{title}</h1>
           <p className="text-sm text-stone-600 mt-0.5" suppressHydrationWarning>{subtitle}</p>
         </div>
-        <button className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors">
-          Save
-        </button>
+        {onSave && (
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors disabled:opacity-50"
+          >
+            {isSaving ? 'Saving…' : 'Save'}
+          </button>
+        )}
+        {!onSave && (
+          <button className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors">
+            Save
+          </button>
+        )}
       </div>
 
       {/* Split panels */}

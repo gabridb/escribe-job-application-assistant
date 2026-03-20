@@ -28,12 +28,13 @@ export function useWritingAssistant(
   jobDescription?: string,
   themeName?: string,
   themeDescription?: string,
+  initialContent?: string,
 ) {
   const [messages, setMessages] = useState<Message[]>([
     { id: generateId(), role: 'assistant', content: GREETING },
   ])
   const [input, setInput] = useState('')
-  const [editorContent, setEditorContent] = useState('')
+  const [editorContent, setEditorContent] = useState(initialContent ?? '')
   const [isLoading, setIsLoading] = useState(false)
 
   const sendPredefinedMessage = useCallback(async (text: string) => {

@@ -1,4 +1,4 @@
-import WritingAssistant from '@/app/components/writing-assistant'
+import CvWritingAssistant from './cv-writing-assistant'
 
 export default async function CvPage({
   params,
@@ -6,13 +6,5 @@ export default async function CvPage({
   params: Promise<{ jobId: string }>
 }) {
   const { jobId } = await params
-
-  return (
-    <WritingAssistant
-      context="cv"
-      jobId={jobId}
-      title="Tailored CV"
-      subtitle="Adapt your CV for this role"
-    />
-  )
+  return <CvWritingAssistant jobId={jobId} />
 }

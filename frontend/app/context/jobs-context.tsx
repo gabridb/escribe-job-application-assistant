@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from 'react'
 import type { Job } from '@/lib/mock/jobs'
@@ -14,7 +13,7 @@ interface JobsContextValue {
   jobs: Job[]
   addJob: (job: Job) => void
   updateJob: (id: string, patch: Partial<Job>) => void
-  deleteJob: (id: string) => void
+  deleteJob: (id: string) => Promise<void>
 }
 
 const JobsContext = createContext<JobsContextValue | null>(null)
@@ -26,23 +25,7 @@ export function JobsProvider({
   initialJobs: Job[]
   children: React.ReactNode
 }) {
-  // Always start with server-provided data to match SSR output, then hydrate
-  // from localStorage on the client in an effect to avoid hydration mismatch.
   const [jobs, setJobs] = useState<Job[]>(initialJobs)
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('escribe-jobs')
-      if (stored) setJobs(JSON.parse(stored) as Job[])
-    } catch {
-      // localStorage unavailable — keep initialJobs
-    }
-  }, [])
-
-  // Keep storage in sync whenever jobs change.
-  useEffect(() => {
-    jobsService.save(jobs)
-  }, [jobs])
 
   const addJob = useCallback((job: Job) => {
     setJobs((prev) => [job, ...prev])
@@ -52,7 +35,8 @@ export function JobsProvider({
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j)))
   }, [])
 
-  const deleteJob = useCallback((id: string) => {
+  const deleteJob = useCallback(async (id: string) => {
+    await jobsService.delete(id)
     setJobs((prev) => prev.filter((j) => j.id !== id))
   }, [])
 
