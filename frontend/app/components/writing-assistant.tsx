@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useWritingAssistant, WritingContext, SuggestedReply } from './hooks/use-writing-assistant'
 import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
@@ -47,6 +47,9 @@ export default function WritingAssistant({
     theme?.name,
     theme?.description,
   )
+
+  const [reviewedWordCount, setReviewedWordCount] = useState(0)
+  const currentWordCount = editorContent.trim().split(/\s+/).filter(Boolean).length
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -114,10 +117,9 @@ export default function WritingAssistant({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggested replies — pinned above input, hidden once conversation starts */}
+          {/* Suggested replies — visible when editor has 10+ words more than when last reviewed */}
           {suggestedReplies &&
-            !messages.some((m) => m.role === 'user') &&
-            editorContent.trim().split(/\s+/).filter(Boolean).length >= 10 && (
+            currentWordCount >= reviewedWordCount + 10 && (
             <div className="px-3 py-3 bg-stone-50 border-t border-stone-200">
               <div className="rounded-lg border border-stone-200 bg-white p-3 flex flex-col gap-2 shadow-sm">
                 <p className="text-sm font-medium text-stone-700">
@@ -129,7 +131,7 @@ export default function WritingAssistant({
                       key={reply.label}
                       variant="outline"
                       size="sm"
-                      onClick={() => sendPredefinedMessage(reply.message)}
+                      onClick={() => { setReviewedWordCount(currentWordCount); sendPredefinedMessage(reply.message) }}
                       disabled={isLoading}
                       className="w-full justify-start"
                     >

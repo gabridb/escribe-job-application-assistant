@@ -127,14 +127,45 @@ This keeps prompt engineering separate from HTTP transport so prompts are easy t
 ### Definition of Done
 
 A feature is **Done** when:
-1. The behaviour works in the browser without errors in the console
-2. A Playwright test covers the MTI and passes
+1. Test scenarios are agreed before coding starts (see Test-First Workflow below)
+2. The behaviour works in the browser without errors in the console
+3. A Playwright test covers the MTI and passes
+4. All existing Playwright tests still pass (`npm run test:e2e` from `frontend/`)
+5. If the feature touches backend prompt logic or non-trivial service logic: Jest unit tests pass (`npm run test` from `backend/`)
+
+### Test-First Workflow
+
+Before writing any implementation code:
+1. Create a planning document in `Specs/plans/` (e.g. `Specs/plans/add-cover-letter.md`) covering:
+   - What is being built and why
+   - **Playwright (E2E) test scenarios**: route, user action(s), expected assertion(s)
+   - **Jest (unit) test scenarios**: function under test, input, expected output — for `*.prompts.ts` and any service methods with non-trivial business logic
+2. Do not start implementation until the planning document is confirmed by the user
+
+After implementation:
+- Run `npm run test:e2e` from `frontend/` — all tests must pass
+- If the feature touches `*.prompts.ts`: run `npm run test` from `backend/` — all tests must pass
+- Fix any failures before marking the task Done — do not skip or defer
 
 ### What NOT to test
 
 - shadcn/ui internals — already tested by the library
 - Mock data shapes — they're test fixtures, not production logic
 - CSS / visual layout — verified manually against design references
+
+### Jest Unit Tests (backend)
+
+- Tests live alongside source files as `*.spec.ts` in `backend/src/`
+- Command: `npm run test` (from `backend/`)
+
+**Test these:**
+- `*.prompts.ts` — pure prompt-building functions; no mocks needed
+- Service methods with non-trivial business logic — e.g. upsert patterns, replace-on-save, orchestration logic; mock TypeORM repositories with `jest.fn()` or `@nestjs/testing` utilities
+
+**Skip these:**
+- Controllers — E2E covers the full HTTP flow
+- Simple CRUD passthroughs (one-liner `repo.find()` / `repo.save()` wrappers with no logic)
+- OpenRouter transport — mocking the AI call adds no value; E2E covers the full flow
 
 ### Manual testing at phase end
 

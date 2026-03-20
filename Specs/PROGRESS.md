@@ -1,5 +1,3 @@
-Próximo paso: Implementar ./Specs/Phase 6
-
 # Escribe — Build Progress
 
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.

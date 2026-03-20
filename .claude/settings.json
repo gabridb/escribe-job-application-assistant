@@ -39,7 +39,13 @@
       "Bash(npx shadcn@latest add avatar dropdown-menu --yes)",
       "Bash(npx shadcn@latest add dialog --yes)",
       "Bash(git add -- frontend/app/layout.tsx frontend/app/components/user-menu.tsx frontend/components/ui/avatar.tsx frontend/components/ui/dialog.tsx frontend/components/ui/dropdown-menu.tsx frontend/public/gabriel-profile.jpg)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(find /home/gabriel/dev/escribe-job-application-assistant -name docker-compose* -o -name *migration* -o -name *typeorm* -o -name *prisma*)",
+      "Bash(grep -r \"TypeOrmModule\\\\|Database\\\\|Entity\" /home/gabriel/dev/escribe-job-application-assistant/backend/src --include=*.ts)",
+      "Bash(grep -r \"DATABASE\\\\|DB_\\\\|POSTGRES\" /home/gabriel/dev/escribe-job-application-assistant --include=*.md --include=*.json)",
+      "Bash(lsb_release -a)",
+      "Read(//usr/lib/**)",
+      "Bash(sudo apt-get:*)"
     ],
     "additionalDirectories": [
       "/Users/gabriel/Documents/job-seeker-assistant/.claude",

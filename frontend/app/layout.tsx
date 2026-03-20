@@ -4,8 +4,6 @@ import Link from "next/link"
 import "./globals.css"
 import { JobsProvider } from "./context/jobs-context"
 import { ThemesProvider } from "./context/themes-context"
-import { getMockJobs } from "@/lib/mock/jobs"
-import { getMockThemes } from "@/lib/mock/themes"
 import UserMenu from "./components/user-menu"
 
 const geist = Geist({
@@ -23,14 +21,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const seedJobs = getMockJobs()
-  const seedThemes = ['job-1', 'job-2', 'job-3'].flatMap(getMockThemes)
-
   return (
     <html lang="en">
       <body className={`${geist.variable} antialiased min-h-screen bg-stone-50`}>
-        <JobsProvider initialJobs={seedJobs}>
-          <ThemesProvider initialThemes={seedThemes}>
+        <JobsProvider initialJobs={[]}>
+          <ThemesProvider initialThemes={[]}>
           <header className="border-b border-stone-200 bg-white">
             <div className="mx-auto flex h-14 max-w-screen-xl items-center justify-between px-6">
               <Link href="/" className="text-lg font-semibold text-stone-900">
