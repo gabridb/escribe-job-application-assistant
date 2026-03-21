@@ -54,7 +54,8 @@ export default function WritingAssistant({
   )
 
   const [reviewedWordCount, setReviewedWordCount] = useState(0)
-  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saved'>('idle')
+  const lastSavedRef = useRef(initialContent ?? '')
   const currentWordCount = editorContent.trim().split(/\s+/).filter(Boolean).length
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -63,19 +64,24 @@ export default function WritingAssistant({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    if (!onSave || editorContent === lastSavedRef.current) return
+    setSaveStatus('pending')
+    const timer = setTimeout(async () => {
+      try {
+        await onSave(editorContent)
+        lastSavedRef.current = editorContent
+        setSaveStatus('saved')
+      } catch {
+        setSaveStatus('idle')
+      }
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [editorContent, onSave])
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
       sendMessage()
-    }
-  }
-
-  async function handleSave() {
-    if (!onSave || isSaving) return
-    setIsSaving(true)
-    try {
-      await onSave(editorContent)
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -87,19 +93,11 @@ export default function WritingAssistant({
           <h1 className="text-xl font-semibold text-stone-900" suppressHydrationWarning>{title}</h1>
           <p className="text-sm text-stone-600 mt-0.5" suppressHydrationWarning>{subtitle}</p>
         </div>
-        {onSave && (
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors disabled:opacity-50"
-          >
-            {isSaving ? 'Saving…' : 'Save'}
-          </button>
+        {onSave && saveStatus === 'pending' && (
+          <span className="text-sm text-stone-400">Saving...</span>
         )}
-        {!onSave && (
-          <button className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors">
-            Save
-          </button>
+        {onSave && saveStatus === 'saved' && (
+          <span className="text-sm text-emerald-600">Saved</span>
         )}
       </div>
 
