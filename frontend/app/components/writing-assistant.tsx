@@ -86,25 +86,9 @@ export default function WritingAssistant({
   }
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-      {/* Title bar */}
-      <div className="flex items-center justify-between py-4 px-6 border-b border-stone-200 bg-white">
-        <div>
-          <h1 className="text-xl font-semibold text-stone-900" suppressHydrationWarning>{title}</h1>
-          <p className="text-sm text-stone-600 mt-0.5" suppressHydrationWarning>{subtitle}</p>
-        </div>
-        {onSave && saveStatus === 'pending' && (
-          <span className="text-sm text-stone-400">Saving...</span>
-        )}
-        {onSave && saveStatus === 'saved' && (
-          <span className="text-sm text-emerald-600">Saved</span>
-        )}
-      </div>
-
-      {/* Split panels */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Chat panel */}
-        <div className="w-[40%] flex flex-col border-r border-stone-200">
+    <div className="h-[calc(100vh-3.5rem)] flex overflow-hidden">
+      {/* Left: Chat panel — full height */}
+      <div className="w-[40%] flex flex-col border-r border-stone-200">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-stone-50">
             {messages.map((message) =>
@@ -196,6 +180,18 @@ export default function WritingAssistant({
 
         {/* Right: Editor panel */}
         <div className="flex-1 flex flex-col bg-white">
+          <div className="flex items-center justify-between py-4 px-6 border-b border-stone-200">
+            <div>
+              <h1 className="text-xl font-semibold text-stone-900" suppressHydrationWarning>{title}</h1>
+              <p className="text-sm text-stone-600 mt-0.5" suppressHydrationWarning>{subtitle}</p>
+            </div>
+            {onSave && saveStatus === 'pending' && (
+              <span className="text-sm text-stone-400">Saving...</span>
+            )}
+            {onSave && saveStatus === 'saved' && (
+              <span className="text-sm text-emerald-600">Saved</span>
+            )}
+          </div>
           <textarea
             value={editorContent}
             onChange={(e) => setEditorContent(e.target.value)}
@@ -203,7 +199,6 @@ export default function WritingAssistant({
             className="flex-1 w-full resize-none p-6 text-stone-800 text-sm leading-relaxed focus:outline-none border-none"
           />
         </div>
-      </div>
     </div>
   )
 }
