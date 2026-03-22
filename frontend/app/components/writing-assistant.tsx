@@ -193,9 +193,14 @@ export default function WritingAssistant({
             )}
           </div>
           <textarea
+            data-testid="editor-textarea"
             value={editorContent}
             onChange={(e) => setEditorContent(e.target.value)}
-            placeholder="Start writing here..."
+            placeholder={
+              context === 'relevant-experience'
+                ? 'Use the STAR framework to structure your answer:\n\nSituation — What was the context?\nTask — What were you trying to achieve?\nAction — What did you do?\nResult — What was the outcome?'
+                : 'Start writing here...'
+            }
             className="flex-1 w-full resize-none p-6 text-stone-800 text-sm leading-relaxed focus:outline-none border-none"
           />
         </div>

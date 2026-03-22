@@ -5,12 +5,12 @@ test('writing assistant renders split-screen layout', async ({ page }) => {
   // chat panel
   await expect(page.getByPlaceholder('Ask AI to modify your document...')).toBeVisible()
   // editor panel
-  await expect(page.getByPlaceholder('Start writing here...')).toBeVisible()
+  await expect(page.getByTestId('editor-textarea')).toBeVisible()
 })
 
 test('editor textarea accepts text input', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
-  const editor = page.getByPlaceholder('Start writing here...')
+  const editor = page.getByTestId('editor-textarea')
   await editor.fill('My relevant experience story')
   await expect(editor).toHaveValue('My relevant experience story')
 })
@@ -36,11 +36,11 @@ test('review my draft button hidden until editor has 10+ words', async ({ page }
   await expect(reviewButton).not.toBeVisible()
 
   // Not visible with fewer than 10 words
-  await page.getByPlaceholder('Start writing here...').fill('Only a few words here.')
+  await page.getByTestId('editor-textarea').fill('Only a few words here.')
   await expect(reviewButton).not.toBeVisible()
 
   // Visible once editor reaches 10+ words
-  await page.getByPlaceholder('Start writing here...').fill(
+  await page.getByTestId('editor-textarea').fill(
     'I led a cross-functional team to deliver a critical migration project on time.'
   )
   await expect(reviewButton).toBeVisible()
@@ -49,7 +49,7 @@ test('review my draft button hidden until editor has 10+ words', async ({ page }
 test('review my draft button hides after being clicked', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  await page.getByPlaceholder('Start writing here...').fill(
+  await page.getByTestId('editor-textarea').fill(
     'I led a cross-functional team to deliver a critical migration project on time.'
   )
   const reviewButton = page.getByRole('button', { name: 'Review my draft' })
@@ -64,7 +64,7 @@ test('review my draft button hides after being clicked', async ({ page }) => {
 test('review my draft button reappears only after 10 more words are added', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  const editor = page.getByPlaceholder('Start writing here...')
+  const editor = page.getByTestId('editor-textarea')
   const reviewButton = page.getByRole('button', { name: 'Review my draft' })
 
   // Write exactly 10 words and click review
@@ -87,7 +87,7 @@ test('review my draft button reappears only after 10 more words are added', asyn
 test('review my draft button sends predefined message with editor content', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  await page.getByPlaceholder('Start writing here...').fill(
+  await page.getByTestId('editor-textarea').fill(
     'I led a cross-functional team to deliver a critical migration project on time.'
   )
 
@@ -110,7 +110,7 @@ test('chat request includes editor content in payload', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
   // Write a draft in the editor
-  const editor = page.getByPlaceholder('Start writing here...')
+  const editor = page.getByTestId('editor-textarea')
   await editor.fill('I led a cross-functional team to deliver a critical migration project on time.')
 
   // Intercept the chat request before sending

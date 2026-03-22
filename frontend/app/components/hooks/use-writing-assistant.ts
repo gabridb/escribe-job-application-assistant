@@ -23,6 +23,17 @@ function generateId(): string {
   return Math.random().toString(36).slice(2, 9)
 }
 
+function getInitialGreeting(
+  context: WritingContext,
+  themeName?: string,
+  initialContent?: string,
+): string {
+  if (context === 'relevant-experience' && themeName && !initialContent?.trim()) {
+    return `I'll help you write your "${themeName}" example. Think of a specific situation where you demonstrated this — what was happening and what were you trying to achieve? Start telling me about it and I'll help you shape it.`
+  }
+  return GREETING
+}
+
 export function useWritingAssistant(
   context: WritingContext,
   jobDescription?: string,
@@ -31,7 +42,7 @@ export function useWritingAssistant(
   initialContent?: string,
 ) {
   const [messages, setMessages] = useState<Message[]>([
-    { id: generateId(), role: 'assistant', content: GREETING },
+    { id: generateId(), role: 'assistant', content: getInitialGreeting(context, themeName, initialContent) },
   ])
   const [input, setInput] = useState('')
   const [editorContent, setEditorContent] = useState(initialContent ?? '')

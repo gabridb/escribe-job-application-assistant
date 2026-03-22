@@ -1,4 +1,4 @@
-import WritingAssistant from '@/app/components/writing-assistant'
+import RelevantExperienceWritingAssistant from './relevant-experience-writing-assistant'
 
 export default async function RelevantExperiencePage({
   params,
@@ -7,16 +7,5 @@ export default async function RelevantExperiencePage({
 }) {
   const { jobId, themeId } = await params
 
-  return (
-    <WritingAssistant
-      context="relevant-experience"
-      jobId={jobId}
-      themeId={themeId}
-      title="Relevant Experience"
-      subtitle="Write your example for this theme"
-      suggestedReplies={[
-        { label: 'Review my draft', message: 'Please review my draft' },
-      ]}
-    />
-  )
+  return <RelevantExperienceWritingAssistant jobId={jobId} themeId={themeId} />
 }

@@ -8,10 +8,12 @@ import { ChatModule } from './chat/chat.module';
 import { ThemesModule } from './themes/themes.module';
 import { CvModule } from './cv/cv.module';
 import { TailoredCvModule } from './tailored-cv/tailored-cv.module';
+import { RelevantExperienceModule } from './relevant-experience/relevant-experience.module';
 import { Job } from './jobs/job.entity';
 import { Theme } from './themes/theme.entity';
 import { CvDocument } from './cv/cv.entity';
 import { TailoredCv } from './tailored-cv/tailored-cv.entity';
+import { RelevantExperience } from './relevant-experience/relevant-experience.entity';
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import { TailoredCv } from './tailored-cv/tailored-cv.entity';
         username: config.get('DB_USERNAME', 'escribe'),
         password: config.get('DB_PASSWORD', 'escribe'),
         database: config.get('DB_NAME', 'escribe'),
-        entities: [Job, Theme, CvDocument, TailoredCv],
+        entities: [Job, Theme, CvDocument, TailoredCv, RelevantExperience],
         synchronize: true,
       }),
     }),
@@ -35,6 +37,7 @@ import { TailoredCv } from './tailored-cv/tailored-cv.entity';
     ThemesModule,
     CvModule,
     TailoredCvModule,
+    RelevantExperienceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

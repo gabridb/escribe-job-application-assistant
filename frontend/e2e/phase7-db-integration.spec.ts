@@ -133,7 +133,7 @@ test('tailored CV page loads saved content into editor', async ({ page }) => {
   await expect(editor).toHaveValue('My tailored CV content here.', { timeout: 8000 })
 })
 
-test('tailored CV save button calls backend PUT', async ({ page }) => {
+test('tailored CV auto-saves and calls backend PUT', async ({ page }) => {
   await page.route('**/api/jobs', (route) => route.fulfill({ json: [mockJob] }))
   await page.route(`**/api/jobs/${JOB_ID}/cv`, async (route) => {
     if (route.request().method() === 'GET') {
@@ -147,18 +147,16 @@ test('tailored CV save button calls backend PUT', async ({ page }) => {
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
   // Wait for the Writing Assistant to render (after initial CV fetch)
-  const editor = page.getByPlaceholder('Start writing here...')
+  const editor = page.getByTestId('editor-textarea')
   await expect(editor).toBeVisible({ timeout: 8000 })
 
-  // Type in the editor
-  await editor.fill('Updated text')
-
-  // Intercept the PUT request
+  // Set up the PUT request intercept before typing
   const saveRequest = page.waitForRequest(
     (req) => req.url().includes(`/api/jobs/${JOB_ID}/cv`) && req.method() === 'PUT'
   )
 
-  await page.getByRole('button', { name: 'Save' }).click()
+  // Type in the editor — auto-save triggers after 1500ms debounce
+  await editor.fill('Updated text')
 
   const req = await saveRequest
   const body = req.postDataJSON() as { text: string }
