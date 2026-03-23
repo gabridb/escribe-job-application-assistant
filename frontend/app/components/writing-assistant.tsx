@@ -6,6 +6,8 @@ import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
 import { Button } from '@/components/ui/button'
 
+const GENERIC_GREETING = "Hello! I'm your AI writing assistant. How can I help you improve your document today?"
+
 interface WritingAssistantProps {
   context: WritingContext
   jobId: string
@@ -14,6 +16,7 @@ interface WritingAssistantProps {
   subtitle: string
   suggestedReplies?: SuggestedReply[]
   initialContent?: string
+  initialGreeting?: string
   onSave?: (text: string) => Promise<void>
 }
 
@@ -25,6 +28,7 @@ export default function WritingAssistant({
   subtitle,
   suggestedReplies,
   initialContent = '',
+  initialGreeting = GENERIC_GREETING,
   onSave,
 }: WritingAssistantProps) {
   const { themes } = useThemes()
@@ -47,6 +51,7 @@ export default function WritingAssistant({
     isLoading,
   } = useWritingAssistant(
     context,
+    initialGreeting,
     job?.description,
     theme?.name,
     theme?.description,

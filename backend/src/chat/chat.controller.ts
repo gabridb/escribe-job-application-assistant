@@ -1,9 +1,10 @@
 import { Controller, Post, Body } from '@nestjs/common'
 import { ChatService } from './chat.service'
+import { buildGenericSystemPrompt, GENERIC_MODEL } from './chat.prompts'
 import {
   buildRelevantExperienceSystemPrompt,
-  buildGenericSystemPrompt,
-} from './chat.prompts'
+  RELEVANT_EXPERIENCE_MODEL,
+} from '../relevant-experience/relevant-experience.prompts'
 
 interface ChatMessage {
   role: string
@@ -27,16 +28,22 @@ export class ChatController {
   async chat(@Body() body: ChatRequestBody): Promise<{ content: string }> {
     const editorContent = body.editorContent ?? ''
 
-    const systemPrompt =
+    const { systemPrompt, model } =
       body.context === 'relevant-experience' && body.themeName && body.themeDescription
-        ? buildRelevantExperienceSystemPrompt(
-            { name: body.themeName, description: body.themeDescription },
-            editorContent,
-            body.jobDescription,
-          )
-        : buildGenericSystemPrompt()
+        ? {
+            systemPrompt: buildRelevantExperienceSystemPrompt(
+              { name: body.themeName, description: body.themeDescription },
+              editorContent,
+              body.jobDescription,
+            ),
+            model: RELEVANT_EXPERIENCE_MODEL,
+          }
+        : {
+            systemPrompt: buildGenericSystemPrompt(),
+            model: GENERIC_MODEL,
+          }
 
-    const content = await this.chatService.chat(body.messages, systemPrompt)
+    const content = await this.chatService.chat(body.messages, systemPrompt, model)
     return { content }
   }
 }

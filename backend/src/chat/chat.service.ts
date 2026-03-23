@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { CHAT_MODEL } from './chat.prompts'
 
 @Injectable()
 export class ChatService {
@@ -9,6 +8,7 @@ export class ChatService {
   async chat(
     messages: { role: string; content: string }[],
     systemPrompt: string,
+    model: string,
   ): Promise<string> {
     const apiKey = this.config.get<string>('OPENROUTER_API_KEY')
     if (!apiKey) {
@@ -25,7 +25,7 @@ export class ChatService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: CHAT_MODEL,
+          model,
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
         }),
       })

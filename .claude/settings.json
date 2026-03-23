@@ -60,7 +60,8 @@
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
       "Bash(echo \"Exit code: $?\")",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(git add:*)"
     ],
     "additionalDirectories": [
       "/Users/gabriel/Documents/job-seeker-assistant/.claude",

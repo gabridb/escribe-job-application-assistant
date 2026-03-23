@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
+import path from "path"
 
 export default defineConfig({
   testDir: "./e2e",
@@ -20,6 +21,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run dev",
+    cwd: path.join(__dirname, ".."),
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
