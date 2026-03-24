@@ -112,6 +112,7 @@ test('add job button shows spinner while backend is processing', async ({ page }
 test('tailored CV page renders Writing Assistant', async ({ page }) => {
   await page.route('**/api/jobs', (route) => route.fulfill({ json: [mockJob] }))
   await page.route(`**/api/jobs/${JOB_ID}/cv`, (route) => route.fulfill({ status: 404, body: '' }))
+  await page.route('**/api/cv', (route) => route.fulfill({ status: 404, body: '' }))
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
@@ -126,6 +127,7 @@ test('tailored CV page loads saved content into editor', async ({ page }) => {
       json: { id: 'cv-1', jobId: JOB_ID, text: 'My tailored CV content here.', updatedAt: '2026-03-20' },
     })
   )
+  await page.route('**/api/cv', (route) => route.fulfill({ status: 404, body: '' }))
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
@@ -143,6 +145,7 @@ test('tailored CV auto-saves and calls backend PUT', async ({ page }) => {
       json: { id: 'cv-1', jobId: JOB_ID, text: 'Updated text', updatedAt: '2026-03-20' },
     })
   })
+  await page.route('**/api/cv', (route) => route.fulfill({ status: 404, body: '' }))
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 

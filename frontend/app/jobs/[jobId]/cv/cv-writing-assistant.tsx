@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import WritingAssistant from '@/app/components/writing-assistant'
 import { tailoredCvService } from '@/lib/services/tailored-cv-service'
+import { cvService } from '@/lib/services/cv-service'
 
 interface CvWritingAssistantProps {
   jobId: string
@@ -10,10 +11,12 @@ interface CvWritingAssistantProps {
 
 export default function CvWritingAssistant({ jobId }: CvWritingAssistantProps) {
   const [initialContent, setInitialContent] = useState<string | undefined>(undefined)
+  const [baseCvText, setBaseCvText] = useState<string | undefined>(undefined)
 
   useEffect(() => {
-    tailoredCvService.get(jobId).then((cv) => {
-      setInitialContent(cv?.text ?? '')
+    Promise.all([tailoredCvService.get(jobId), cvService.get()]).then(([tailoredCv, baseCv]) => {
+      setInitialContent(tailoredCv?.text ?? baseCv?.text ?? '')
+      setBaseCvText(baseCv?.text)
     })
   }, [jobId])
 
@@ -40,6 +43,7 @@ export default function CvWritingAssistant({ jobId }: CvWritingAssistantProps) {
       title="Tailored CV"
       subtitle="Adapt your CV for this role"
       initialContent={initialContent}
+      baseCvText={baseCvText}
       onSave={handleSave}
     />
   )

@@ -27,6 +27,7 @@ export function useWritingAssistant(
   themeName?: string,
   themeDescription?: string,
   initialContent?: string,
+  baseCvText?: string,
 ) {
   const [messages, setMessages] = useState<Message[]>([
     { id: generateId(), role: 'assistant', content: initialGreeting },
@@ -60,6 +61,7 @@ export function useWritingAssistant(
         themeName,
         themeDescription,
         editorContent,
+        baseCvText,
       })
 
       setMessages((prev) => [
@@ -79,7 +81,7 @@ export function useWritingAssistant(
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent])
+  }, [isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText])
 
   const sendMessage = useCallback(async () => {
     const trimmed = input.trim()
@@ -109,6 +111,7 @@ export function useWritingAssistant(
         themeName,
         themeDescription,
         editorContent,
+        baseCvText,
       })
 
       setMessages((prev) => [
@@ -128,7 +131,7 @@ export function useWritingAssistant(
     } finally {
       setIsLoading(false)
     }
-  }, [input, isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent])
+  }, [input, isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText])
 
   return {
     messages,

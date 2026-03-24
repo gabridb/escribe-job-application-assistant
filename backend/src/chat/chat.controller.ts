@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common'
 import { ChatService } from './chat.service'
-import { buildGenericSystemPrompt, GENERIC_MODEL } from './chat.prompts'
+import { buildGenericSystemPrompt, buildCvSystemPrompt, GENERIC_MODEL } from './chat.prompts'
 import {
   buildRelevantExperienceSystemPrompt,
   RELEVANT_EXPERIENCE_MODEL,
@@ -18,6 +18,7 @@ interface ChatRequestBody {
   themeName?: string
   themeDescription?: string
   editorContent?: string
+  baseCvText?: string
 }
 
 @Controller()
@@ -38,10 +39,15 @@ export class ChatController {
             ),
             model: RELEVANT_EXPERIENCE_MODEL,
           }
-        : {
-            systemPrompt: buildGenericSystemPrompt(),
-            model: GENERIC_MODEL,
-          }
+        : body.context === 'cv'
+          ? {
+              systemPrompt: buildCvSystemPrompt(body.baseCvText, body.jobDescription),
+              model: GENERIC_MODEL,
+            }
+          : {
+              systemPrompt: buildGenericSystemPrompt(),
+              model: GENERIC_MODEL,
+            }
 
     const content = await this.chatService.chat(body.messages, systemPrompt, model)
     return { content }

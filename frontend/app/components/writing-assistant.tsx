@@ -17,6 +17,7 @@ interface WritingAssistantProps {
   suggestedReplies?: SuggestedReply[]
   initialContent?: string
   initialGreeting?: string
+  baseCvText?: string
   onSave?: (text: string) => Promise<void>
 }
 
@@ -29,6 +30,7 @@ export default function WritingAssistant({
   suggestedReplies,
   initialContent = '',
   initialGreeting = GENERIC_GREETING,
+  baseCvText,
   onSave,
 }: WritingAssistantProps) {
   const { themes } = useThemes()
@@ -56,6 +58,7 @@ export default function WritingAssistant({
     theme?.name,
     theme?.description,
     initialContent,
+    baseCvText,
   )
 
   const [reviewedWordCount, setReviewedWordCount] = useState(0)

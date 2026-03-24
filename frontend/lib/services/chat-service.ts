@@ -10,6 +10,7 @@ export interface ChatPayload {
   themeName?: string
   themeDescription?: string
   editorContent?: string
+  baseCvText?: string
 }
 
 export async function sendChatMessage(payload: ChatPayload): Promise<string> {

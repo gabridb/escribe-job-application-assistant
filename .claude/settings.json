@@ -62,7 +62,8 @@
       "Bash(echo \"Exit code: $?\")",
       "Bash(docker compose:*)",
       "Bash(git add:*)",
-      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx\\)$\")",
+      "Bash(npx jest:*)"
     ],
     "additionalDirectories": [
       "/Users/gabriel/Documents/job-seeker-assistant/.claude",

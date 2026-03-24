@@ -133,6 +133,8 @@ test('cover letter page shows Cover Letter label', async ({ page }) => {
 })
 
 test('cv page shows Tailored CV label', async ({ page }) => {
+  await page.route('**/api/jobs/job-1/cv', (route) => route.fulfill({ status: 404, body: '' }))
+  await page.route('**/api/cv', (route) => route.fulfill({ status: 404, body: '' }))
   await page.goto('/jobs/job-1/cv')
   await expect(page.getByRole('heading', { name: 'Tailored CV' })).toBeVisible()
 })
