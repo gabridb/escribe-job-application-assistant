@@ -2,7 +2,7 @@ export const RELEVANT_EXPERIENCE_MODEL = 'meta-llama/llama-3.1-8b-instruct'
 
 export function buildInitialGreeting(themeName: string, hasContent: boolean): string {
   if (!hasContent) {
-    return `I'll help you write your "${themeName}" example. Think of a specific situation where you demonstrated this — what was happening and what were you trying to achieve? Start telling me about it and I'll help you shape it.`
+    return `Let's build your "${themeName}" example.\nWrite a rough draft below — just tell me the story: what was happening, what you were trying to achieve, what you actually did, and how it turned out.\nDon't edit yourself. A messy first draft is exactly what we need.`
   }
   return "Hello! I'm your AI writing assistant. How can I help you improve your document today?"
 }
