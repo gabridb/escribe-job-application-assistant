@@ -1,4 +1,4 @@
-export const RELEVANT_EXPERIENCE_MODEL = 'meta-llama/llama-3.1-8b-instruct'
+export const RELEVANT_EXPERIENCE_MODEL = 'anthropic/claude-opus-4-6'
 
 export function buildInitialGreeting(themeName: string, hasContent: boolean): string {
   if (!hasContent) {
