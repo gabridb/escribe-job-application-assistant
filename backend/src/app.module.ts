@@ -17,7 +17,7 @@ import { RelevantExperience } from './relevant-experience/relevant-experience.en
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../.env', '.env'] }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
