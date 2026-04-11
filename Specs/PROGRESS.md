@@ -75,6 +75,8 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 
 ## Phase 5 — Experience Library
 
+_Deferred — pages are stubs only._
+
 - ⬜ **Library renderiza lista global** → `/experience` muestra todas las experiencias escritas
 - ⬜ **Experience writer funciona** → `/experience/:experienceId` abre el Writing Assistant en contexto de librería
 - ⬜ **Sugerencias de reutilización** → al generar themes, la IA sugiere experiencias existentes que encajan
@@ -89,39 +91,56 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 ## Phase 6 — Polish
 
 - ⬜ **Empty states** → cada pantalla muestra un estado vacío útil cuando no hay datos
-- ⬜ **Persistencia en localStorage** → al recargar la página, los jobs y experiencias se mantienen
 - ⬜ **Error states** → formularios muestran errores de validación
+- ✅ **Persistencia** → jobs y experiencias persisten en PostgreSQL (implementado en Phase 7)
 
 **Test manual al completar la fase:**
 - [ ] Dashboard sin jobs → mensaje de empty state visible y útil
-- [ ] Crear un job, recargar la página → el job sigue ahí
 - [ ] Intentar enviar el formulario vacío → aparecen mensajes de error en los campos
 
 ---
 
-## Phase 6 — Real AI Integration (localStorage se mantiene)
+## Phase 6 — Real AI Integration
 
-Estado: localStorage sigue siendo la capa de persistencia. El objetivo es conectar el backend con OpenRouter para reemplazar las respuestas mockeadas.
-
-- ⬜ **NestJS recibe mensajes de chat** → `POST /api/chat` acepta `{ message, context }` y devuelve una respuesta de texto (sin streaming por ahora)
-- ⬜ **OpenRouter integrado** → el backend llama a OpenRouter con el mensaje del usuario y devuelve la respuesta real de la IA
-- ⬜ **Writing Assistant usa el endpoint real** → el frontend llama a `/api/chat` en vez de devolver la respuesta mockeada
-- ⬜ **Análisis de job al crear** → `POST /api/analyze-job` recibe el texto del job description y devuelve título, empresa y lista de themes generados por IA; el frontend los guarda en localStorage como hasta ahora
+- ✅ **NestJS recibe mensajes de chat** → `POST /api/chat` acepta `{ message, context }` y devuelve una respuesta de texto
+- ✅ **OpenRouter integrado** → el backend llama a OpenRouter con el mensaje del usuario y devuelve la respuesta real de la IA
+- ✅ **Writing Assistant usa el endpoint real** → el frontend llama a `/api/chat` en vez de devolver la respuesta mockeada
+- ✅ **Análisis de job al crear** → `POST /api/jobs` recibe el texto del job description y devuelve título, empresa y lista de themes generados por IA
 
 **Test manual al completar la fase:**
-- [ ] Enviar un mensaje en el Writing Assistant → la respuesta viene de la IA real (no del mock)
-- [ ] Crear un job pegando un job description real → el título, empresa y themes los genera la IA
-- [ ] Los themes tienen sentido para el rol descrito
+- [x] Enviar un mensaje en el Writing Assistant → la respuesta viene de la IA real (no del mock)
+- [x] Crear un job pegando un job description real → el título, empresa y themes los genera la IA
+- [x] Los themes tienen sentido para el rol descrito
 
 ---
 
-## Phase 7 — Backend + PostgreSQL (deferred)
+## Phase 7 — Backend + PostgreSQL
 
-_Pendiente de implementar cuando se quiera reemplazar localStorage con persistencia real._
+- ✅ **Docker + PostgreSQL corriendo** → `npm run dev` arranca el contenedor automáticamente
+- ✅ **NestJS CRUD API para jobs, themes y experiences** → endpoints REST completos
+- ✅ **Frontend services apuntan al backend** → `fetch('/api/...')` reemplaza localStorage
+- ✅ **Add Job Flow rebuildeado** → dialog en Dashboard + spinner "Analysing..." + navega directamente a themes page
 
-- ⬜ Docker + PostgreSQL corriendo
-- ⬜ NestJS CRUD API para jobs, themes y experiences
-- ⬜ Frontend services apuntan al backend en vez de localStorage
+**Test manual al completar la fase:**
+- [x] `npm run dev` → PostgreSQL arranca en Docker automáticamente
+- [x] Crear un job → persiste en base de datos tras recargar la página
+- [x] Themes se cargan desde la API (verificable con network tab)
+
+---
+
+## Phase 8 — Relevant Experience & Base CV
+
+- ✅ **Relevant Experience auto-save** → el editor en `/jobs/:jobId/themes/:themeId` guarda automáticamente en el backend con debounce; muestra estado "Saved"
+- ✅ **Base CV pre-fill** → al abrir `/jobs/:jobId/cv` sin CV tailoreado, el editor se pre-rellena con el base CV del usuario
+- ✅ **Base CV en contexto de IA** → el chat en la página de CV recibe el base CV como contexto para dar respuestas más relevantes
+- ✅ **View CV** → el menú de usuario muestra "View CV" cuando hay un CV subido; abre una nueva pestaña en `/cv/view`
+
+**Test manual al completar la fase:**
+- [ ] Subir un `.md` CV via UserMenu "Upload CV"
+- [ ] Abrir CV page de un job (sin tailored CV) → editor pre-relleno con base CV
+- [ ] Abrir CV page de un job (con tailored CV guardado) → editor muestra tailored CV
+- [ ] Chatear en CV page ("What should I emphasise?") → respuesta de IA hace referencia al CV
+- [ ] View CV aparece en menú sólo cuando hay CV subido; abre nueva pestaña correctamente
 
 ---
 

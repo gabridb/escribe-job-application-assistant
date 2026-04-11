@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Upload, CheckCircle2 } from 'lucide-react'
+import { Upload, CheckCircle2, FileText } from 'lucide-react'
 import { cvService } from '@/lib/services/cv-service'
 
 type UploadState = 'idle' | 'success' | 'error'
@@ -23,7 +23,14 @@ export default function UserMenu() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [fileName, setFileName] = useState<string | null>(null)
+  const [cvName, setCvName] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    cvService.get().then((cv) => {
+      if (cv) setCvName(cv.name)
+    })
+  }, [])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -37,6 +44,7 @@ export default function UserMenu() {
           text: reader.result as string,
         })
         setFileName(file.name)
+        setCvName(file.name)
         setUploadState('success')
       } catch {
         setUploadState('error')
@@ -73,6 +81,14 @@ export default function UserMenu() {
             <Upload className="h-4 w-4" />
             Upload CV
           </DropdownMenuItem>
+          {cvName && (
+            <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+              <a href="/cv/view" target="_blank" rel="noopener noreferrer">
+                <FileText className="h-4 w-4" />
+                View CV
+              </a>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
