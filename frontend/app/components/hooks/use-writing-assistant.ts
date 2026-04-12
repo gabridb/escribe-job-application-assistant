@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { sendChatMessage } from '@/lib/services/chat-service'
+import { sendChatMessage, RelevantExperienceEntry } from '@/lib/services/chat-service'
 
 export type WritingContext = 'relevant-experience' | 'cover-letter' | 'cv'
 
@@ -20,6 +20,18 @@ function generateId(): string {
   return Math.random().toString(36).slice(2, 9)
 }
 
+function parseResponse(raw: string): { editorContent?: string; chatMessage: string } {
+  const match = raw.match(/<editor_content>([\s\S]*?)<\/editor_content>/)
+  if (match) {
+    const editorContent = match[1].trim()
+    const chatMessage =
+      raw.replace(/<editor_content>[\s\S]*?<\/editor_content>/, '').trim() ||
+      'Done! Your document is in the editor on the right.'
+    return { editorContent, chatMessage }
+  }
+  return { chatMessage: raw }
+}
+
 export function useWritingAssistant(
   context: WritingContext,
   initialGreeting: string,
@@ -28,6 +40,7 @@ export function useWritingAssistant(
   themeDescription?: string,
   initialContent?: string,
   baseCvText?: string,
+  relevantExperiences?: RelevantExperienceEntry[],
 ) {
   const [messages, setMessages] = useState<Message[]>([
     { id: generateId(), role: 'assistant', content: initialGreeting },
@@ -62,11 +75,16 @@ export function useWritingAssistant(
         themeDescription,
         editorContent,
         baseCvText,
+        relevantExperiences,
       })
 
+      const parsed = parseResponse(content)
+      if (parsed.editorContent !== undefined) {
+        setEditorContent(parsed.editorContent)
+      }
       setMessages((prev) => [
         ...prev,
-        { id: generateId(), role: 'assistant', content },
+        { id: generateId(), role: 'assistant', content: parsed.chatMessage },
       ])
     } catch (err) {
       console.error('Chat error:', err)
@@ -81,7 +99,7 @@ export function useWritingAssistant(
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText])
+  }, [isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText, relevantExperiences])
 
   const sendMessage = useCallback(async () => {
     const trimmed = input.trim()
@@ -112,11 +130,16 @@ export function useWritingAssistant(
         themeDescription,
         editorContent,
         baseCvText,
+        relevantExperiences,
       })
 
+      const parsed = parseResponse(content)
+      if (parsed.editorContent !== undefined) {
+        setEditorContent(parsed.editorContent)
+      }
       setMessages((prev) => [
         ...prev,
-        { id: generateId(), role: 'assistant', content },
+        { id: generateId(), role: 'assistant', content: parsed.chatMessage },
       ])
     } catch (err) {
       console.error('Chat error:', err)
@@ -131,7 +154,7 @@ export function useWritingAssistant(
     } finally {
       setIsLoading(false)
     }
-  }, [input, isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText])
+  }, [input, isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText, relevantExperiences])
 
   return {
     messages,
