@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { Theme } from '../themes/theme.entity';
 import { TailoredCv } from '../tailored-cv/tailored-cv.entity';
+import { CoverLetter } from '../cover-letter/cover-letter.entity';
 
 @Entity('jobs')
 export class Job {
@@ -25,6 +26,9 @@ export class Job {
   @OneToMany(() => Theme, (theme) => theme.job, { cascade: true })
   themes: Theme[];
 
-  @OneToMany(() => TailoredCv, (tailoredCv) => tailoredCv.job, { cascade: true })
-  tailoredCvs: TailoredCv[];
+  @OneToOne(() => TailoredCv, (tailoredCv) => tailoredCv.job, { cascade: true })
+  tailoredCv: TailoredCv;
+
+  @OneToOne(() => CoverLetter, (coverLetter) => coverLetter.job, { cascade: true })
+  coverLetter: CoverLetter;
 }

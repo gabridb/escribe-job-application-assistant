@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { useWritingAssistant, WritingContext, SuggestedReply } from './hooks/use-writing-assistant'
+import { RelevantExperienceEntry } from '@/lib/services/chat-service'
 import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
 import { Button } from '@/components/ui/button'
@@ -15,9 +16,12 @@ interface WritingAssistantProps {
   title: string
   subtitle: string
   suggestedReplies?: SuggestedReply[]
+  autoWriteReplies?: SuggestedReply[]
   initialContent?: string
   initialGreeting?: string
+  jobDescription?: string
   baseCvText?: string
+  relevantExperiences?: RelevantExperienceEntry[]
   onSave?: (text: string) => Promise<void>
 }
 
@@ -28,9 +32,12 @@ export default function WritingAssistant({
   title,
   subtitle,
   suggestedReplies,
+  autoWriteReplies,
   initialContent = '',
   initialGreeting = GENERIC_GREETING,
+  jobDescription,
   baseCvText,
+  relevantExperiences,
   onSave,
 }: WritingAssistantProps) {
   const { themes } = useThemes()
@@ -54,11 +61,12 @@ export default function WritingAssistant({
   } = useWritingAssistant(
     context,
     initialGreeting,
-    job?.description,
+    jobDescription ?? job?.description,
     theme?.name,
     theme?.description,
     initialContent,
     baseCvText,
+    relevantExperiences,
   )
 
   const [reviewedWordCount, setReviewedWordCount] = useState(0)
@@ -133,6 +141,31 @@ export default function WritingAssistant({
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Auto-write replies — visible immediately, hidden once suggestedReplies kicks in */}
+          {autoWriteReplies && !(suggestedReplies && currentWordCount >= reviewedWordCount + 10) && (
+            <div className="px-3 py-3 bg-stone-50 border-t border-stone-200">
+              <div className="rounded-lg border border-stone-200 bg-white p-3 flex flex-col gap-2 shadow-sm">
+                <p className="text-sm font-medium text-stone-700">
+                  Want me to write a first draft for you?
+                </p>
+                <div className="flex flex-col gap-1">
+                  {autoWriteReplies.map((reply) => (
+                    <Button
+                      key={reply.label}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => sendPredefinedMessage(reply.message)}
+                      disabled={isLoading}
+                      className="w-full justify-start"
+                    >
+                      {reply.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Suggested replies — visible when editor has 10+ words more than when last reviewed */}
           {suggestedReplies &&

@@ -1,4 +1,4 @@
-import WritingAssistant from '@/app/components/writing-assistant'
+import CoverLetterWritingAssistant from './cover-letter-writing-assistant'
 
 export default async function CoverLetterPage({
   params,
@@ -7,12 +7,5 @@ export default async function CoverLetterPage({
 }) {
   const { jobId } = await params
 
-  return (
-    <WritingAssistant
-      context="cover-letter"
-      jobId={jobId}
-      title="Cover Letter"
-      subtitle="Write your cover letter for this role"
-    />
-  )
+  return <CoverLetterWritingAssistant jobId={jobId} />
 }

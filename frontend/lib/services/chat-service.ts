@@ -3,6 +3,11 @@ interface ChatMessage {
   content: string
 }
 
+export interface RelevantExperienceEntry {
+  themeName: string
+  text: string
+}
+
 export interface ChatPayload {
   messages: ChatMessage[]
   context: 'relevant-experience' | 'cover-letter' | 'cv'
@@ -11,6 +16,7 @@ export interface ChatPayload {
   themeDescription?: string
   editorContent?: string
   baseCvText?: string
+  relevantExperiences?: RelevantExperienceEntry[]
 }
 
 export async function sendChatMessage(payload: ChatPayload): Promise<string> {

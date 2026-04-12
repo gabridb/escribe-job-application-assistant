@@ -1,8 +1,18 @@
 # Escribe — Build Progress
 
+Improvements:
+
+- Give more context whn writting main themes. For example, Strategic Leasdership: what do they mean about this?
+- Back buttonn to key themes from writting assitant
+- Feedback in the chat is too long
+- Edit job metadata, for example if the name of the company is unknown I should be able to add it
+- It doesn't write the cl in the edior but in the chat
+- Para escribir la cl, se envía todas las relevantExperiences al llm. Un agente tendría primero que resumirlas si quiero que sea más corto
+
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.
 
 ## Status Legend
+
 - ✅ Done
 - 🚧 In Progress
 - ⬜ To Do
@@ -16,6 +26,7 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 - ✅ **Nav + route stubs** → todos los links de navegación funcionan; cada ruta muestra una página mínima con su título
 
 **Test manual al completar la fase:**
+
 - [ ] `npm run dev` → abrir `http://localhost:3000`
 - [ ] El header muestra "Escribe" en todas las rutas
 - [ ] Los links "Dashboard" y "Experience Library" navegan correctamente
@@ -33,6 +44,7 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 - ✅ **Submit añade job y redirige** → al enviar el formulario, el nuevo job aparece en el Dashboard
 
 **Test manual al completar la fase:**
+
 - [ ] El Dashboard muestra al menos 2 job cards con título, empresa y badge de estado
 - [ ] El badge de estado tiene el color correcto (emerald = Done, amber = In Progress, stone = To Do)
 - [ ] Clicar "Add Job Offer" navega a `/jobs/new`
@@ -48,6 +60,7 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 - ✅ **Mock AI genera themes al crear job** → al añadir un job, los themes se generan automáticamente con datos mockeados
 
 **Test manual al completar la fase:**
+
 - [ ] Clicar un job card en el Dashboard navega a su página de themes
 - [ ] La página muestra el nombre del job en el título
 - [ ] Los themes aparecen en lista con nombre, descripción y badge de estado
@@ -65,6 +78,7 @@ Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que pued
 - ✅ **CV writer funciona** → `/jobs/:jobId/cv` abre el Writing Assistant con contexto de CV
 
 **Test manual al completar la fase:**
+
 - [ ] Abrir un theme → layout split-screen ocupa toda la pantalla (sin scroll vertical)
 - [ ] Escribir en el editor → el texto aparece correctamente
 - [ ] Enviar un mensaje en el chat → aparece la respuesta mockeada de la IA
@@ -82,6 +96,7 @@ _Deferred — pages are stubs only._
 - ⬜ **Sugerencias de reutilización** → al generar themes, la IA sugiere experiencias existentes que encajan
 
 **Test manual al completar la fase:**
+
 - [ ] `/experience` muestra todas las experiencias guardadas con título y fecha
 - [ ] Clicar una experiencia abre el Writing Assistant en contexto de librería
 - [ ] Crear un job nuevo → en la página de themes aparece una sugerencia de reutilización para al menos un theme
@@ -95,6 +110,7 @@ _Deferred — pages are stubs only._
 - ✅ **Persistencia** → jobs y experiencias persisten en PostgreSQL (implementado en Phase 7)
 
 **Test manual al completar la fase:**
+
 - [ ] Dashboard sin jobs → mensaje de empty state visible y útil
 - [ ] Intentar enviar el formulario vacío → aparecen mensajes de error en los campos
 
@@ -108,6 +124,7 @@ _Deferred — pages are stubs only._
 - ✅ **Análisis de job al crear** → `POST /api/jobs` recibe el texto del job description y devuelve título, empresa y lista de themes generados por IA
 
 **Test manual al completar la fase:**
+
 - [x] Enviar un mensaje en el Writing Assistant → la respuesta viene de la IA real (no del mock)
 - [x] Crear un job pegando un job description real → el título, empresa y themes los genera la IA
 - [x] Los themes tienen sentido para el rol descrito
@@ -122,6 +139,7 @@ _Deferred — pages are stubs only._
 - ✅ **Add Job Flow rebuildeado** → dialog en Dashboard + spinner "Analysing..." + navega directamente a themes page
 
 **Test manual al completar la fase:**
+
 - [x] `npm run dev` → PostgreSQL arranca en Docker automáticamente
 - [x] Crear un job → persiste en base de datos tras recargar la página
 - [x] Themes se cargan desde la API (verificable con network tab)
@@ -136,6 +154,7 @@ _Deferred — pages are stubs only._
 - ✅ **View CV** → el menú de usuario muestra "View CV" cuando hay un CV subido; abre una nueva pestaña en `/cv/view`
 
 **Test manual al completar la fase:**
+
 - [ ] Subir un `.md` CV via UserMenu "Upload CV"
 - [ ] Abrir CV page de un job (sin tailored CV) → editor pre-relleno con base CV
 - [ ] Abrir CV page de un job (con tailored CV guardado) → editor muestra tailored CV
@@ -144,9 +163,25 @@ _Deferred — pages are stubs only._
 
 ---
 
+## Phase 9 — Cover Letter
+
+- ⬜ **Cover Letter persistence** → `GET /api/jobs/:jobId/cover-letter` returns saved text; `PUT` saves it
+- ⬜ **Cover Letter auto-save** → typing in the editor triggers a debounced save (shows "Saved" indicator)
+- ⬜ **Cover Letter AI prompt** → chat uses a specialised system prompt with job description + base CV context
+
+**Test manual al completar la fase:**
+
+- [ ] Navigate to `/jobs/:jobId/cover-letter` → editor loads (empty if no cover letter saved yet)
+- [ ] Type in the editor → "Saved" indicator appears after ~1.5 s
+- [ ] Reload the page → typed text is still there
+- [ ] Send a chat message ("Help me write an opening paragraph") → AI response references the specific job
+
+---
+
 ## Criterio MTI
 
 Un paso está **Done** cuando:
+
 1. Se puede abrir en el navegador
 2. El comportamiento descrito funciona sin errores en consola
 3. No depende de pasos futuros para tener sentido visualmente

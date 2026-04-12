@@ -1,35 +1,35 @@
-# Decisiones — Escribe
+# Architecture Decision Records — Escribe
 
-## Guía de documentación
+Decisions are in `Specs/decisions/`, one file per decision.
 
-| Archivo | Para qué sirve |
-|---------|---------------|
-| `CLAUDE.md` | Instrucciones para Claude: stack, convenciones de código, patrones de arquitectura y restricciones de v1. Es lo primero que Claude lee al empezar a trabajar. |
-| `Specs/PRD.md` | Especificación del producto: qué construir y por qué. Funcionalidades, flujos de usuario, sistema de diseño y alcance de v1. Es la fuente de verdad del producto. |
-| `Specs/PROGRESS.md` | Tracker de construcción: qué está hecho, qué está en progreso y qué queda por hacer, organizado por fases. |
-| `Specs/designs/` | Capturas de pantalla de los diseños de referencia. Consultar antes de construir cualquier pantalla. |
-| `DECISIONS.md` | Este archivo. Registro de decisiones técnicas y de producto: qué se eligió, qué se descartó y por qué. Evita reabrir debates ya resueltos. |
+## Index
 
+| ID | Title | Status |
+| -- | ----- | ------ |
+| [001](Specs/decisions/001-frontend-architecture.md) | Frontend architecture — Server/Client split + custom hooks | Accepted |
+| [002](Specs/decisions/002-v1-frontend-only-scope.md) | V1 scope — frontend-only, mock AI | Superseded by 004 |
+| [003](Specs/decisions/003-prompt-transport-split.md) | Backend AI — prompt/transport split | Accepted |
+| [004](Specs/decisions/004-single-user-no-auth.md) | No authentication — single-user app in V2 | Accepted |
+| [005](Specs/decisions/005-openrouter-model-choice.md) | OpenRouter as AI provider; Claude Opus for STAR coaching | Accepted |
+
+## Format
+
+Each ADR file uses this structure:
+
+```markdown
+---
+id: "NNN"
+title: Short title
+date: YYYY-MM-DD
+status: Proposed | Accepted | Deprecated | Superseded by #NNN
 ---
 
-## Registro de decisiones
+## Context
+What situation forced this decision?
 
-### 2026-03-14 — Patrón de arquitectura frontend
+## Decision
+What was decided, stated directly.
 
-**Decisión**: Server/Client Component split (Next.js App Router) + custom hooks.
-
-**Descartado**: Container-View pattern (patrón legacy de React pre-hooks, no encaja con App Router).
-
-**Razón**: App Router ya tiene una separación natural entre Server Components (datos) y Client Components (interactividad). Los custom hooks reemplazan los containers para la lógica del lado cliente.
-
----
-
-### 2026-03-14 — Alcance de v1
-
-**Decisión**: Solo frontend, sin backend real.
-
-- IA mockeada — sin llamadas reales a la API de Claude
-- Estado en memoria / localStorage — sin base de datos
-- Input de texto plano — sin parseo de ficheros
-
-**Razón**: Prioridad es construir y validar todas las pantallas e interacciones antes de integrar el backend.
+## Consequences
+What becomes easier / harder. What follow-up decisions this creates.
+```

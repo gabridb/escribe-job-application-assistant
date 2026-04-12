@@ -1,15 +1,15 @@
 import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Job } from '../jobs/job.entity';
 
-@Entity('tailored_cvs')
-export class TailoredCv {
+@Entity('cover_letters')
+export class CoverLetter {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true })
   jobId: string;
 
-  @OneToOne(() => Job, (job) => job.tailoredCv, { onDelete: 'CASCADE' })
+  @OneToOne(() => Job, (job) => job.coverLetter, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'jobId' })
   job: Job;
 

@@ -7,6 +7,7 @@ AI-powered job application assistant. Helps job seekers prepare tailored CV, cov
 Full product spec: `Specs/PRD.md`
 
 Key concepts (see Glossary in PRD):
+
 - **Job Offer** — a job description added by the user
 - **Key Interview Themes** — competencies extracted per job, interview-prep prompts
 - **Relevant Experience** — user's written story for a theme
@@ -16,7 +17,7 @@ Key concepts (see Glossary in PRD):
 ## Stack
 
 | Layer | Tech |
-|-------|------|
+| ------- | ------ |
 | Monorepo | npm workspaces |
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 |
 | UI components | shadcn/ui |
@@ -31,19 +32,21 @@ Key concepts (see Glossary in PRD):
 V1 (frontend-only with mocked AI) is complete. V2 activates the backend and real AI.
 
 **V2 goals:**
+
 - Real AI calls via **OpenRouter** (cheap/fast models — API key lives server-side only)
 - **PostgreSQL** in Docker replaces localStorage as the persistence layer
 - NestJS backend API: the frontend services layer swaps `localStorage` for `fetch('/api/...')`
 - No auth — single-user app
 
 **Still out of scope:**
+
 - File parsing (PDF/DOCX) — raw text input only
 - Mobile layout
 - Export to PDF/DOCX
 
 ## Routes
 
-```
+```text
 /                               Dashboard — Job Offers list
 /jobs/new                       Add Job Offer
 /jobs/:jobId/themes             Key Interview Themes (job-scoped)
@@ -69,7 +72,7 @@ Follow the Next.js App Router model — this is the primary architectural bounda
 
 Extract state logic and event handlers from Client Components into custom hooks:
 
-```
+```text
 frontend/app/hooks/use-themes.ts   ← state, handlers, derived values
 ```
 
@@ -77,7 +80,7 @@ Keeps components thin and logic testable.
 
 ### File Conventions
 
-```
+```text
 app/jobs/[jobId]/themes/
 ├── page.tsx              ← Server Component (data, layout)
 ├── themes-list.tsx       ← 'use client' (interactive UI) — named by what it renders
@@ -91,7 +94,7 @@ Client Components are named **descriptively** (e.g. `jobs-list.tsx`, `themes-lis
 
 All React Contexts live in `app/context/`:
 
-```
+```text
 app/context/
 ├── jobs-context.tsx      ← JobsProvider + useJobs
 └── themes-context.tsx    ← ThemesProvider + useThemes
@@ -102,11 +105,11 @@ app/context/
 Every backend AI feature uses a two-file split inside its module:
 
 | File | Responsibility |
-|------|---------------|
+| ------ | --------------- |
 | `*.prompts.ts` | Pure functions that build prompt strings. No NestJS, no HTTP, no side effects. |
 | `*.service.ts` | Transport only — calls OpenRouter, returns parsed result. No prompt logic. |
 
-```
+```text
 chat.prompts.ts  →  buildSystemPrompt(context, jobDescription?, cvText?) → string
 chat.service.ts  →  calls OpenRouter with the built prompt → returns reply string
 ```
@@ -127,6 +130,7 @@ This keeps prompt engineering separate from HTTP transport so prompts are easy t
 ### Definition of Done
 
 A feature is **Done** when:
+
 1. Test scenarios are agreed before coding starts (see Test-First Workflow below)
 2. The behaviour works in the browser without errors in the console
 3. A Playwright test covers the MTI and passes
@@ -136,6 +140,7 @@ A feature is **Done** when:
 ### Test-First Workflow
 
 Before writing any implementation code:
+
 1. Create a planning document in `Specs/plans/` (e.g. `Specs/plans/add-cover-letter.md`) covering:
    - What is being built and why
    - **Playwright (E2E) test scenarios**: route, user action(s), expected assertion(s)
@@ -143,6 +148,7 @@ Before writing any implementation code:
 2. Do not start implementation until the planning document is confirmed by the user
 
 After implementation:
+
 - Run `npm run test:e2e` from `frontend/` — all tests must pass
 - If the feature touches `*.prompts.ts`: run `npm run test` from `backend/` — all tests must pass
 - Fix any failures before marking the task Done — do not skip or defer
@@ -159,10 +165,12 @@ After implementation:
 - Command: `npm run test` (from `backend/`)
 
 **Test these:**
+
 - `*.prompts.ts` — pure prompt-building functions; no mocks needed
 - Service methods with non-trivial business logic — e.g. upsert patterns, replace-on-save, orchestration logic; mock TypeORM repositories with `jest.fn()` or `@nestjs/testing` utilities
 
 **Skip these:**
+
 - Controllers — E2E covers the full HTTP flow
 - Simple CRUD passthroughs (one-liner `repo.find()` / `repo.save()` wrappers with no logic)
 - OpenRouter transport — mocking the AI call adds no value; E2E covers the full flow
@@ -185,12 +193,14 @@ Each phase ends with a manual test checklist defined in `Specs/PROGRESS.md`. Aft
 ## Frontend vs Backend Responsibilities
 
 ### Frontend owns
+
 - All UI rendering, routing, and client state (React Context)
 - Form validation and presentational logic
 - The Writing Assistant UI — chat input, message rendering, rich text editor
 - Sends user messages to the backend and streams responses back
 
 ### Backend owns
+
 - Data persistence (PostgreSQL — source of truth for all resources)
 - **AI orchestration**: receives a chat message from the frontend, constructs the full prompt (injecting job description, CV, experience entries from the DB), calls OpenRouter, and streams the response back
 - Business logic with side effects (e.g. generating themes from a job description, extracting job metadata)
@@ -200,7 +210,7 @@ Each phase ends with a manual test checklist defined in `Specs/PROGRESS.md`. Aft
 
 Each service file is a thin abstraction over the persistence layer:
 
-```
+```text
 Component → Context → service.getAll() → fetch('/api/...')  →  NestJS  →  PostgreSQL
 ```
 
@@ -208,7 +218,7 @@ The services call the backend API. No localStorage for domain data in v2.
 
 ### AI call flow
 
-```
+```text
 Browser → POST /api/chat  →  NestJS ChatService  →  OpenRouter API
                     ↑ prompt enriched with DB context (job, CV, themes, experiences)
           ← streaming response (SSE) ←←←←←←←←←←←←←←←←←←←←←←←←←←←
@@ -216,7 +226,7 @@ Browser → POST /api/chat  →  NestJS ChatService  →  OpenRouter API
 
 ### AI-triggered flows (backend-initiated, no user chat)
 
-```
+```text
 POST /api/jobs  →  NestJS JobsService  →  OpenRouter (extract metadata + generate themes)
                                        →  saves Job + Themes to PostgreSQL
                                        ←  returns job with themes
@@ -226,7 +236,7 @@ POST /api/jobs  →  NestJS JobsService  →  OpenRouter (extract metadata + gen
 
 ## Project Structure
 
-```
+```text
 /
 ├── frontend/
 │   ├── app/          # App Router pages and layouts
@@ -238,11 +248,32 @@ POST /api/jobs  →  NestJS JobsService  →  OpenRouter (extract metadata + gen
 │       ├── experience/
 │       ├── cv/
 │       └── chat/     # AI streaming endpoint
-├── docker-compose.yml  # PostgreSQL + (future) backend container
+├── docker-compose.yml  # PostgreSQL container
 ├── Specs/
-│   ├── PRD.md        # Product requirements (source of truth)
-│   ├── PROGRESS.md   # MTI tracker
-│   └── designs/      # UI design references (PNG screenshots)
+│   ├── PRD.md            # Product requirements (source of truth)
+│   ├── PROGRESS.md       # MTI phase tracker
+│   ├── plans/            # One file per feature — written before coding starts
+│   ├── decisions/        # Architecture Decision Records (ADRs)
+│   └── designs/          # UI design references (PNG screenshots)
 ├── CLAUDE.md         # This file
-└── DECISIONS.md      # Technical decision log
+└── DECISIONS.md      # ADR index (links to Specs/decisions/)
 ```
+
+### Documentation conventions
+
+- **`Specs/plans/`** — feature plans written *before* coding. Use `/new-feature <name>` to scaffold one.
+- **`Specs/decisions/`** — ADRs for architectural choices. Add one whenever a non-obvious decision is made. See `DECISIONS.md` for the index and format.
+- **No separate `Documentation/` folder** — the code is the source of truth for APIs and schema. Read the NestJS controllers and TypeORM entities directly.
+
+## Git Conventions
+
+Prefix every commit message with a type:
+
+| Prefix | When to use |
+| -------- | ----------- |
+| `feat:` | New user-visible feature |
+| `fix:` | Bug fix |
+| `chore:` | Maintenance — deps, config, tooling |
+| `refactor:` | Code restructuring with no behaviour change |
+
+Scope is optional but useful for larger areas: `feat(cover-letter): add auto-save`.
