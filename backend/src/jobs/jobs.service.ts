@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Job } from './job.entity';
 import { Theme } from '../themes/theme.entity';
 import { ANALYZE_JOB_MODEL, buildAnalyzeJobPrompt } from './jobs.prompts';
+import { UpdateJobDto } from './update-job.dto';
 
 export interface ThemeData {
   name: string;
@@ -60,6 +61,22 @@ export class JobsService {
     );
 
     return { ...savedJob, themes };
+  }
+
+  async updateJob(id: string, dto: UpdateJobDto): Promise<Job> {
+    const job = await this.findOne(id);
+    if (!job) throw new NotFoundException(`Job ${id} not found`);
+
+    if (dto.title !== undefined) {
+      const trimmed = dto.title.trim();
+      if (!trimmed) throw new BadRequestException('Title cannot be empty');
+      job.title = trimmed;
+    }
+    if (dto.company !== undefined) {
+      job.company = dto.company.trim();
+    }
+
+    return this.jobRepo.save(job);
   }
 
   async deleteJob(id: string): Promise<void> {

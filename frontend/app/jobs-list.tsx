@@ -1,15 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useJobs } from './context/jobs-context'
 import NewJobDialog from './components/new-job-dialog'
+import EditJobDialog from './components/edit-job-dialog'
+import type { Job } from '@/lib/mock/jobs'
 
 export default function JobsList() {
-  const { jobs, deleteJob } = useJobs()
+  const { jobs, deleteJob, refreshJobs } = useJobs()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingJob, setEditingJob] = useState<Job | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+
+  useEffect(() => { refreshJobs() }, [refreshJobs])
 
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-10">
@@ -96,13 +102,22 @@ export default function JobsList() {
                     </Button>
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      aria-label={`Delete ${job.title}`}
-                      onClick={() => deleteJob(job.id)}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        aria-label={`Edit ${job.title}`}
+                        onClick={() => { setEditingJob(job); setEditDialogOpen(true) }}
+                        className="text-stone-500 hover:text-stone-800 transition-colors"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        aria-label={`Delete ${job.title}`}
+                        onClick={() => deleteJob(job.id)}
+                        className="text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -112,6 +127,16 @@ export default function JobsList() {
       )}
 
       <NewJobDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      {editingJob && (
+        <EditJobDialog
+          job={editingJob}
+          open={editDialogOpen}
+          onOpenChange={(open) => {
+            setEditDialogOpen(open)
+            if (!open) setEditingJob(null)
+          }}
+        />
+      )}
     </div>
   )
 }

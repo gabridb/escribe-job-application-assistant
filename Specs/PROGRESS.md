@@ -2,11 +2,7 @@
 
 Improvements:
 
-- Give more context whn writting main themes. For example, Strategic Leasdership: what do they mean about this?
-- Back buttonn to key themes from writting assitant
-- Feedback in the chat is too long
 - Edit job metadata, for example if the name of the company is unknown I should be able to add it
-- It doesn't write the cl in the edior but in the chat
 - Para escribir la cl, se envía todas las relevantExperiences al llm. Un agente tendría primero que resumirlas si quiero que sea más corto
 
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.

@@ -38,6 +38,18 @@ export const jobsService = {
     return res.json()
   },
 
+  async update(id: string, dto: { title?: string; company?: string }): Promise<Job> {
+    const res = await fetch(`${API_URL}/api/jobs/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dto),
+    })
+    if (!res.ok) {
+      throw new Error(`Failed to update job: ${res.status}`)
+    }
+    return res.json()
+  },
+
   async delete(id: string): Promise<void> {
     await fetch(`${API_URL}/api/jobs/${id}`, { method: 'DELETE' })
   },
