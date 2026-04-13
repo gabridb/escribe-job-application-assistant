@@ -1,11 +1,12 @@
 import { Controller, Post, Body } from '@nestjs/common'
 import { ChatService } from './chat.service'
-import { buildGenericSystemPrompt, buildCvSystemPrompt, GENERIC_MODEL } from './chat.prompts'
+import { buildGenericSystemPrompt, GENERIC_MODEL } from './chat.prompts'
 import {
   buildRelevantExperienceSystemPrompt,
   RELEVANT_EXPERIENCE_MODEL,
 } from '../relevant-experience/relevant-experience.prompts'
 import { buildCoverLetterSystemPrompt, RelevantExperienceEntry } from '../cover-letter/cover-letter.prompts'
+import { buildTailoredCvSystemPrompt } from '../tailored-cv/tailored-cv.prompts'
 
 interface ChatMessage {
   role: string
@@ -43,7 +44,12 @@ export class ChatController {
           }
         : body.context === 'cv'
           ? {
-              systemPrompt: buildCvSystemPrompt(body.baseCvText, body.jobDescription),
+              systemPrompt: buildTailoredCvSystemPrompt(
+                body.baseCvText,
+                body.jobDescription,
+                body.relevantExperiences,
+                editorContent,
+              ),
               model: GENERIC_MODEL,
             }
           : body.context === 'cover-letter'
