@@ -225,6 +225,9 @@ export default function WritingAssistant({
             <div>
               <h1 className="text-xl font-semibold text-stone-900" suppressHydrationWarning>{title}</h1>
               <p className="text-sm text-stone-600 mt-0.5" suppressHydrationWarning>{subtitle}</p>
+              {theme?.description && (
+                <p className="text-sm text-stone-500 mt-1 italic">{theme.description}</p>
+              )}
             </div>
             {onSave && saveStatus === 'pending' && (
               <span className="text-sm text-stone-400">Saving...</span>
