@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Geist } from "next/font/google"
+import Image from "next/image"
 import Link from "next/link"
 import "./globals.css"
 import { JobsProvider } from "./context/jobs-context"
@@ -15,6 +16,9 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "Escribe",
   description: "AI-powered job application assistant",
+  icons: {
+    icon: "/logo.png",
+  },
 }
 
 export default async function RootLayout({
@@ -40,8 +44,9 @@ export default async function RootLayout({
           <ThemesProvider initialThemes={[]}>
           <header className="border-b border-stone-200 bg-white">
             <div className="mx-auto flex h-14 max-w-screen-xl items-center justify-between px-6">
-              <Link href="/" className="text-lg font-semibold text-stone-900">
-                Escribe
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/logo.png" alt="Escribe" width={24} height={24} />
+                <span className="text-lg font-semibold text-stone-900">Escribe</span>
               </Link>
               <nav className="flex items-center gap-6">
                 <Link
