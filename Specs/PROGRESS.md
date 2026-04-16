@@ -5,6 +5,22 @@ Improvements:
 - Edit job metadata, for example if the name of the company is unknown I should be able to add it
 - Para escribir la cl, se envía todas las relevantExperiences al llm. Un agente tendría primero que resumirlas si quiero que sea más corto
 
+---
+
+## Deferred: Diff system for AI suggestions
+
+**Decision: not building this now.**
+
+When the AI rewrites a document (cover letter, CV), it currently replaces the editor content immediately. A diff system would show what changed before the user accepts it.
+
+Three options were considered:
+
+- **A — Accept/Reject all:** Simple. Holds the AI response as a "pending suggestion", user accepts or discards the whole thing. Works fine for full rewrites but offers no granularity.
+- **B — Inline tracked changes (preferred UX):** Computes a diff client-side and shows additions/deletions inline (green/red), user accepts per-hunk like Google Docs. Best experience but high complexity — needs either a custom diff renderer or a rich text editor with built-in track-changes support.
+- **C — AI outputs structured patches:** The AI returns a JSON list of targeted edits instead of a full rewrite. Fragile — LLMs drift from strict formats, "find this text" breaks on duplicates, positional references go out of sync after edits. High prompt engineering cost for unreliable results.
+
+**Why deferred:** B is the right UX but too complex for now. C is weak. A is buildable but adds little value since the AI rewrites the whole document anyway — the user can already just undo.
+
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.
 
 ## Status Legend

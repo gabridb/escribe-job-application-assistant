@@ -27,18 +27,14 @@ Key concepts (see Glossary in PRD):
 | Testing | Playwright (E2E) |
 | Dev | `npm run dev` — runs both frontend and backend concurrently |
 
-## Current Scope: V2 — Real AI + Backend
-
-V1 (frontend-only with mocked AI) is complete. V2 activates the backend and real AI.
-
-**V2 goals:**
+## Stack in use
 
 - Real AI calls via **OpenRouter** (cheap/fast models — API key lives server-side only)
-- **PostgreSQL** in Docker replaces localStorage as the persistence layer
-- NestJS backend API: the frontend services layer swaps `localStorage` for `fetch('/api/...')`
+- **PostgreSQL** in Docker is the persistence layer
+- NestJS backend API: the frontend services layer calls `fetch('/api/...')`
 - No auth — single-user app
 
-**Still out of scope:**
+**Out of scope:**
 
 - File parsing (PDF/DOCX) — raw text input only
 - Mobile layout
