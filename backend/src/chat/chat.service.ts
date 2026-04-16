@@ -16,21 +16,34 @@ export class ChatService {
       return 'AI is not configured. Please set OPENROUTER_API_KEY on the backend.'
     }
 
+    const requestBody = JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
+    })
+
     let response: Response
-    try {
-      response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'system', content: systemPrompt }, ...messages],
-        }),
-      })
-    } catch (err) {
-      console.error('OpenRouter fetch error:', err)
+    let lastErr: unknown
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: requestBody,
+        })
+        break
+      } catch (err) {
+        lastErr = err
+        if (attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+      }
+    }
+
+    if (!response!) {
+      console.error('OpenRouter fetch error after retry:', lastErr)
       return 'Sorry, something went wrong. Please try again.'
     }
 

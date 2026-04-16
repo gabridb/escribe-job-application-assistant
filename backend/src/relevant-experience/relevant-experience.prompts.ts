@@ -1,10 +1,41 @@
 export const RELEVANT_EXPERIENCE_MODEL = 'anthropic/claude-opus-4-6'
+export const EXPERIENCE_MATCHING_MODEL = 'meta-llama/llama-3.1-8b-instruct'
 
 export function buildInitialGreeting(themeName: string, hasContent: boolean): string {
   if (!hasContent) {
     return `Let's build your "${themeName}" example.\nWrite a rough draft below — just tell me the story: what was happening, what you were trying to achieve, what you actually did, and how it turned out.\nDon't edit yourself. A messy first draft is exactly what we need.`
   }
   return "Hello! I'm your AI writing assistant. How can I help you improve your document today?"
+}
+
+export function buildExperienceMatchingPrompt(
+  theme: { name: string; description: string },
+  candidates: { themeName: string; text: string }[],
+): string {
+  const candidateList = candidates
+    .map((c, i) => `[${i}] Theme: ${c.themeName}\n${c.text.slice(0, 400)}`)
+    .join('\n\n')
+
+  return `You are a career assistant. Decide whether any candidate experience below closely matches the given interview theme. A "close match" means the experience could be adapted to answer this theme with minimal rewriting.
+
+Current theme:
+Name: ${theme.name}
+Description: ${theme.description}
+
+Candidate experiences:
+${candidateList}
+
+Return ONLY valid JSON with no additional text or markdown:
+{
+  "matchIndex": <0-based index of the best match, or -1 if no candidate is a close match>,
+  "reason": "<one sentence explanation>"
+}
+
+Important: return -1 if no candidate is genuinely closely related. Do not force a match.`
+}
+
+export function buildMatchGreeting(matchedThemeName: string): string {
+  return `I found a similar story you wrote for "${matchedThemeName}". I've loaded it into the editor — adapt it to fit this role.`
 }
 
 export function buildRelevantExperienceSystemPrompt(
