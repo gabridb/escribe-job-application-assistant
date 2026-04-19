@@ -36,5 +36,8 @@ Thumbs.db
 # Testing
 coverage/
 
+# Claude Code
+.claude/worktrees/
+
 # Misc
 *.tsbuildinfo
