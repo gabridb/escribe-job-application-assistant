@@ -79,4 +79,16 @@ describe('buildCoverLetterSystemPrompt', () => {
       expect(prompt).not.toContain('<current_draft>');
     });
   });
+
+  it('includes the no-fabrication rule regardless of inputs', () => {
+    const bare = buildCoverLetterSystemPrompt(undefined, undefined, undefined, undefined);
+    const full = buildCoverLetterSystemPrompt(
+      'CV text',
+      'Job description',
+      [{ themeName: 'Leadership', text: 'Led a team.' }],
+      'Existing draft',
+    );
+    expect(bare).toContain('Never invent');
+    expect(full).toContain('Never invent');
+  });
 });

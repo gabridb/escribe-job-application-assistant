@@ -8,10 +8,11 @@ describe('buildRelevantExperienceSystemPrompt', () => {
     expect(result).toContain('Guide them through the STAR method')
   })
 
-  it('with draft — critiques using STAR framework and includes draft', () => {
+  it('with draft — coaches using STAR framework, allows rewriting, and includes draft', () => {
     const draft = 'I led a project to migrate our database.'
     const result = buildRelevantExperienceSystemPrompt(theme, draft)
-    expect(result).toContain('Critique it using the STAR framework')
+    expect(result).toContain('STAR framework')
+    expect(result).toContain('<editor_content>')
     expect(result).toContain(draft)
   })
 
@@ -19,6 +20,40 @@ describe('buildRelevantExperienceSystemPrompt', () => {
     const jobDescription = 'Senior engineer at Acme Corp'
     const result = buildRelevantExperienceSystemPrompt(theme, '', jobDescription)
     expect(result).toContain(jobDescription)
+  })
+
+  it('with draft — recognises broadened rewrite trigger verbs', () => {
+    const result = buildRelevantExperienceSystemPrompt(theme, 'some draft')
+    expect(result).toContain('apply')
+    expect(result).toContain('implement')
+    expect(result).toContain('incorporate')
+    expect(result).toContain('update')
+    expect(result).toContain('make the changes')
+  })
+
+  it('with draft — requires editor_content tags when draft is updated', () => {
+    const result = buildRelevantExperienceSystemPrompt(theme, 'some draft')
+    expect(result).toContain('MUST')
+    expect(result).toContain('<editor_content>')
+  })
+
+  it('with draft — preserves coaching-vs-rewrite distinction', () => {
+    const result = buildRelevantExperienceSystemPrompt(theme, 'some draft')
+    expect(result).toContain('coaching')
+    expect(result).toContain('should NOT include')
+  })
+
+  it('with draft — instructs the coach to surface ONE issue and offer to apply the fix', () => {
+    const result = buildRelevantExperienceSystemPrompt(theme, 'some draft')
+    expect(result).toContain('ONE')
+    expect(result).toMatch(/offer to apply|rewrite it/i)
+  })
+
+  it('includes the no-fabrication rule in both draft and empty-draft branches', () => {
+    const withDraft = buildRelevantExperienceSystemPrompt(theme, 'some draft')
+    const withoutDraft = buildRelevantExperienceSystemPrompt(theme, '')
+    expect(withDraft).toContain('Never invent')
+    expect(withoutDraft).toContain('Never invent')
   })
 })
 

@@ -1,3 +1,5 @@
+import { NO_FABRICATION_RULE } from '../chat/prompt-guardrails'
+
 export interface RelevantExperienceEntry {
   themeName: string
   text: string
@@ -17,6 +19,7 @@ export function buildCoverLetterSystemPrompt(
 ): string {
   const parts: string[] = [
     `You are an AI writing assistant helping a job seeker write a compelling cover letter for a specific role.`,
+    NO_FABRICATION_RULE,
   ]
   if (baseCvText) {
     parts.push(`Here is the user's CV:\n<base_cv>\n${baseCvText}\n</base_cv>`)

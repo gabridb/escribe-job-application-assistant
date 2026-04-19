@@ -52,4 +52,16 @@ describe('buildTailoredCvSystemPrompt', () => {
     expect(prompt).toContain('has not written anything yet')
     expect(prompt).toContain('<editor_content>')
   })
+
+  it('includes the no-fabrication rule regardless of inputs', () => {
+    const bare = buildTailoredCvSystemPrompt(undefined, undefined, undefined, undefined)
+    const full = buildTailoredCvSystemPrompt(
+      'CV text',
+      'Job description',
+      [{ themeName: 'Leadership', text: 'Led a team.' }],
+      'Existing draft',
+    )
+    expect(bare).toContain('Never invent')
+    expect(full).toContain('Never invent')
+  })
 })

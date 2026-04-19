@@ -1,3 +1,5 @@
+import { NO_FABRICATION_RULE } from '../chat/prompt-guardrails'
+
 export interface RelevantExperienceEntry {
   themeName: string
   text: string
@@ -17,6 +19,7 @@ export function buildTailoredCvSystemPrompt(
 ): string {
   const parts: string[] = [
     `You are an AI writing assistant helping a job seeker tailor their CV for a specific role.`,
+    NO_FABRICATION_RULE,
   ]
 
   if (baseCvText) {
