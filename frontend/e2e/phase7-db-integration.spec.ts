@@ -117,7 +117,7 @@ test('tailored CV page renders Writing Assistant', async ({ page }) => {
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
   await expect(page.getByRole('heading', { name: 'Tailored CV' })).toBeVisible({ timeout: 8000 })
-  await expect(page.getByPlaceholder('Start writing here...')).toBeVisible()
+  await expect(page.getByTestId('editor-content')).toBeVisible()
 })
 
 test('tailored CV page loads saved content into editor', async ({ page }) => {
@@ -131,8 +131,8 @@ test('tailored CV page loads saved content into editor', async ({ page }) => {
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  const editor = page.getByPlaceholder('Start writing here...')
-  await expect(editor).toHaveValue('My tailored CV content here.', { timeout: 8000 })
+  const editor = page.getByTestId('editor-content')
+  await expect(editor).toContainText('My tailored CV content here.', { timeout: 8000 })
 })
 
 test('tailored CV auto-saves and calls backend PUT', async ({ page }) => {
@@ -150,7 +150,7 @@ test('tailored CV auto-saves and calls backend PUT', async ({ page }) => {
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
   // Wait for the Writing Assistant to render (after initial CV fetch)
-  const editor = page.getByTestId('editor-textarea')
+  const editor = page.getByTestId('editor-content')
   await expect(editor).toBeVisible({ timeout: 8000 })
 
   // Set up the PUT request intercept before typing

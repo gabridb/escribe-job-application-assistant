@@ -47,6 +47,7 @@ export function useWritingAssistant(
   ])
   const [input, setInput] = useState('')
   const [editorContent, setEditorContent] = useState(initialContent ?? '')
+  const [editorText, setEditorText] = useState(initialContent ?? '')
   const [isLoading, setIsLoading] = useState(false)
 
   const sendPredefinedMessage = useCallback(async (text: string) => {
@@ -162,6 +163,8 @@ export function useWritingAssistant(
     setInput,
     editorContent,
     setEditorContent,
+    editorText,
+    setEditorText,
     sendMessage,
     sendPredefinedMessage,
     isLoading,

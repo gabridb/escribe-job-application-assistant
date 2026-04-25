@@ -7,7 +7,7 @@ export interface RelevantExperienceEntry {
 
 const EDITOR_CONTENT_FORMAT = `When you write or revise the CV, wrap the full text in <editor_content> tags like this:
 <editor_content>
-[full CV text here]
+[full CV text here, formatted in Markdown — use ## headings for sections, **bold** for job titles, and - bullet lists for achievements]
 </editor_content>
 Then add one short sentence outside the tags explaining what you changed. Do not include the CV text outside the tags.`
 

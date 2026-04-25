@@ -26,8 +26,9 @@ test('editor pre-fills with base CV when no tailored CV exists', async ({ page }
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  const editor = page.getByTestId('editor-textarea')
-  await expect(editor).toHaveValue(BASE_CV_TEXT, { timeout: 8000 })
+  const editor = page.getByTestId('editor-content')
+  await expect(editor).toContainText('My Base CV', { timeout: 8000 })
+  await expect(editor).toContainText('Experienced engineer with 5 years in TypeScript.')
 })
 
 test('"View CV" item appears in user menu dropdown when CV exists', async ({ page }) => {
@@ -80,6 +81,8 @@ test('editor shows tailored CV (not base CV) when tailored CV already exists', a
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  const editor = page.getByTestId('editor-textarea')
-  await expect(editor).toHaveValue(TAILORED_CV_TEXT, { timeout: 8000 })
+  const editor = page.getByTestId('editor-content')
+  await expect(editor).toContainText('Tailored for Acme', { timeout: 8000 })
+  await expect(editor).toContainText('Customised content for this role.')
+  await expect(editor).not.toContainText('My Base CV')
 })

@@ -26,7 +26,7 @@ test.beforeAll(async ({ request }) => {
 test('relevant experience persists after navigation', async ({ page }) => {
   await page.goto(`/jobs/${jobId}/themes/${themeId}`)
 
-  const editor = page.getByTestId('editor-textarea')
+  const editor = page.getByTestId('editor-content')
   await expect(editor).toBeVisible({ timeout: 8000 })
 
   const text = `relevant-experience-${Date.now()}`
@@ -36,13 +36,13 @@ test('relevant experience persists after navigation', async ({ page }) => {
   await page.goto(`/jobs/${jobId}/themes`)
   await page.goto(`/jobs/${jobId}/themes/${themeId}`)
 
-  await expect(editor).toHaveValue(text, { timeout: 5000 })
+  await expect(editor).toContainText(text, { timeout: 5000 })
 })
 
 test('tailored CV persists after navigation', async ({ page }) => {
   await page.goto(`/jobs/${jobId}/cv`)
 
-  const editor = page.getByPlaceholder('Start writing here...')
+  const editor = page.getByTestId('editor-content')
   await expect(editor).toBeVisible({ timeout: 8000 })
 
   const text = `cv-content-${Date.now()}`
@@ -52,5 +52,5 @@ test('tailored CV persists after navigation', async ({ page }) => {
   await page.goto(`/jobs/${jobId}/themes`)
   await page.goto(`/jobs/${jobId}/cv`)
 
-  await expect(editor).toHaveValue(text, { timeout: 5000 })
+  await expect(editor).toContainText(text, { timeout: 5000 })
 })

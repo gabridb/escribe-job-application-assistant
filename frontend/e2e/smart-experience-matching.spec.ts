@@ -17,7 +17,7 @@ test('editor is pre-populated when backend finds a matching experience', async (
 
   await page.goto(`/jobs/${JOB_ID}/themes/${THEME_ID}`)
 
-  await expect(page.getByTestId('editor-textarea')).toHaveValue(matchedText, { timeout: 8000 })
+  await expect(page.getByTestId('editor-content')).toContainText(matchedText, { timeout: 8000 })
 })
 
 test('chat shows match greeting when a similar experience is found', async ({ page }) => {
@@ -49,7 +49,10 @@ test('editor is empty when no matching experience exists', async ({ page }) => {
 
   await page.goto(`/jobs/${JOB_ID}/themes/${THEME_ID}`)
 
-  await expect(page.getByTestId('editor-textarea')).toHaveValue('', { timeout: 8000 })
+  // Editor is visible with no content (only whitespace/empty paragraphs)
+  const editor = page.getByTestId('editor-content')
+  await expect(editor).toBeVisible({ timeout: 8000 })
+  await expect(editor).toHaveText(/^\s*$/, { timeout: 8000 })
   await expect(page.getByText("Let's build your")).toBeVisible()
 })
 
@@ -66,6 +69,6 @@ test('editor shows existing saved content and does not trigger match greeting', 
 
   await page.goto(`/jobs/${JOB_ID}/themes/${THEME_ID}`)
 
-  await expect(page.getByTestId('editor-textarea')).toHaveValue(existingText, { timeout: 8000 })
+  await expect(page.getByTestId('editor-content')).toContainText(existingText, { timeout: 8000 })
   await expect(page.getByText('I found a similar story')).not.toBeVisible()
 })

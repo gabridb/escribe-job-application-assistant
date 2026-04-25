@@ -6,6 +6,9 @@ import { RelevantExperienceEntry } from '@/lib/services/chat-service'
 import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
 import { Button } from '@/components/ui/button'
+import dynamic from 'next/dynamic'
+
+const RichTextEditor = dynamic(() => import('./rich-text-editor'), { ssr: false })
 
 const GENERIC_GREETING = "Hello! I'm your AI writing assistant. How can I help you improve your document today?"
 
@@ -55,6 +58,8 @@ export default function WritingAssistant({
     setInput,
     editorContent,
     setEditorContent,
+    editorText,
+    setEditorText,
     sendMessage,
     sendPredefinedMessage,
     isLoading,
@@ -72,7 +77,7 @@ export default function WritingAssistant({
   const [reviewedWordCount, setReviewedWordCount] = useState(0)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saved'>('idle')
   const lastSavedRef = useRef(initialContent ?? '')
-  const currentWordCount = editorContent.trim().split(/\s+/).filter(Boolean).length
+  const currentWordCount = editorText.trim().split(/\s+/).filter(Boolean).length
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -236,16 +241,15 @@ export default function WritingAssistant({
               <span className="text-sm text-emerald-600">Saved</span>
             )}
           </div>
-          <textarea
-            data-testid="editor-textarea"
-            value={editorContent}
-            onChange={(e) => setEditorContent(e.target.value)}
+          <RichTextEditor
+            content={editorContent}
+            onChange={setEditorContent}
+            onTextChange={setEditorText}
             placeholder={
               context === 'relevant-experience'
-                ? 'Use the STAR framework to structure your answer:\n\nSituation — What was the context?\nTask — What were you trying to achieve?\nAction — What did you do?\nResult — What was the outcome?'
+                ? 'Use the STAR framework to structure your answer: Situation, Task, Action, Result...'
                 : 'Start writing here...'
             }
-            className="flex-1 w-full resize-none p-6 text-stone-800 text-sm leading-relaxed focus:outline-none border-none"
           />
         </div>
     </div>

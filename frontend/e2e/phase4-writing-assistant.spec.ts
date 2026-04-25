@@ -5,14 +5,15 @@ test('writing assistant renders split-screen layout', async ({ page }) => {
   // chat panel
   await expect(page.getByPlaceholder('Ask AI to modify your document...')).toBeVisible()
   // editor panel
-  await expect(page.getByTestId('editor-textarea')).toBeVisible()
+  await expect(page.getByTestId('editor-content')).toBeVisible()
 })
 
-test('editor textarea accepts text input', async ({ page }) => {
+test('editor accepts text input', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
-  const editor = page.getByTestId('editor-textarea')
-  await editor.fill('My relevant experience story')
-  await expect(editor).toHaveValue('My relevant experience story')
+  const editor = page.getByTestId('editor-content')
+  await editor.click()
+  await page.keyboard.type('My relevant experience story')
+  await expect(editor).toContainText('My relevant experience story')
 })
 
 test('chat sends user message and receives AI reply', async ({ page }) => {
@@ -36,22 +37,24 @@ test('review my draft button hidden until editor has 10+ words', async ({ page }
   await expect(reviewButton).not.toBeVisible()
 
   // Not visible with fewer than 10 words
-  await page.getByTestId('editor-textarea').fill('Only a few words here.')
+  const editor = page.getByTestId('editor-content')
+  await editor.click()
+  await page.keyboard.type('Only a few words here.')
   await expect(reviewButton).not.toBeVisible()
 
   // Visible once editor reaches 10+ words
-  await page.getByTestId('editor-textarea').fill(
-    'I led a cross-functional team to deliver a critical migration project on time.'
-  )
+  await page.keyboard.press('Control+A')
+  await page.keyboard.type('I led a cross-functional team to deliver a critical migration project on time.')
   await expect(reviewButton).toBeVisible()
 })
 
 test('review my draft button hides after being clicked', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  await page.getByTestId('editor-textarea').fill(
-    'I led a cross-functional team to deliver a critical migration project on time.'
-  )
+  const editor = page.getByTestId('editor-content')
+  await editor.click()
+  await page.keyboard.type('I led a cross-functional team to deliver a critical migration project on time.')
+
   const reviewButton = page.getByRole('button', { name: 'Review my draft' })
   await expect(reviewButton).toBeVisible()
 
@@ -64,32 +67,34 @@ test('review my draft button hides after being clicked', async ({ page }) => {
 test('review my draft button reappears only after 10 more words are added', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  const editor = page.getByTestId('editor-textarea')
+  const editor = page.getByTestId('editor-content')
   const reviewButton = page.getByRole('button', { name: 'Review my draft' })
 
   // Write exactly 10 words and click review
-  await editor.fill('I led a team to successfully deliver a critical project.')
+  await editor.click()
+  await page.keyboard.type('I led a team to successfully deliver a critical project.')
   await expect(reviewButton).toBeVisible()
   await reviewButton.click()
   await expect(reviewButton).not.toBeVisible()
 
+  // Re-focus the editor before typing more
+  await editor.click()
+
   // Adding fewer than 10 words — button should stay hidden
-  await editor.fill('I led a team to deliver a critical project. Also improved.')
+  await page.keyboard.type(' Also improved.')
   await expect(reviewButton).not.toBeVisible()
 
   // Adding 10+ more words — button should reappear
-  await editor.fill(
-    'I led a team to deliver a critical project. I also improved our deployment pipeline reducing release time by forty percent.'
-  )
+  await page.keyboard.type(' I also improved our deployment pipeline reducing release time by forty percent.')
   await expect(reviewButton).toBeVisible()
 })
 
 test('review my draft button sends predefined message with editor content', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  await page.getByTestId('editor-textarea').fill(
-    'I led a cross-functional team to deliver a critical migration project on time.'
-  )
+  const editor = page.getByTestId('editor-content')
+  await editor.click()
+  await page.keyboard.type('I led a cross-functional team to deliver a critical migration project on time.')
 
   const chatRequestPromise = page.waitForRequest((req) =>
     req.url().includes('/api/chat') && req.method() === 'POST'
@@ -103,15 +108,15 @@ test('review my draft button sends predefined message with editor content', asyn
   // Predefined message text is sent
   expect(body.messages.at(-1)).toMatchObject({ role: 'user', content: 'Please review my draft' })
   // Editor content is included in the payload
-  expect(body.editorContent).toBe('I led a cross-functional team to deliver a critical migration project on time.')
+  expect(body.editorContent).toContain('I led a cross-functional team to deliver a critical migration project on time.')
 })
 
 test('chat request includes editor content in payload', async ({ page }) => {
   await page.goto('/jobs/job-1/themes/theme-1-1')
 
-  // Write a draft in the editor
-  const editor = page.getByTestId('editor-textarea')
-  await editor.fill('I led a cross-functional team to deliver a critical migration project on time.')
+  const editor = page.getByTestId('editor-content')
+  await editor.click()
+  await page.keyboard.type('I led a cross-functional team to deliver a critical migration project on time.')
 
   // Intercept the chat request before sending
   const chatRequestPromise = page.waitForRequest((req) =>
@@ -124,7 +129,7 @@ test('chat request includes editor content in payload', async ({ page }) => {
 
   const chatRequest = await chatRequestPromise
   const body = chatRequest.postDataJSON() as { editorContent?: string }
-  expect(body.editorContent).toBe('I led a cross-functional team to deliver a critical migration project on time.')
+  expect(body.editorContent).toContain('I led a cross-functional team to deliver a critical migration project on time.')
 })
 
 test('cover letter page shows Cover Letter label', async ({ page }) => {

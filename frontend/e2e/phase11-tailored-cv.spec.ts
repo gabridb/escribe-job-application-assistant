@@ -24,7 +24,7 @@ test('editor textarea is visible on CV page', async ({ page }) => {
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  await expect(page.getByTestId('editor-textarea')).toBeVisible({ timeout: 8000 })
+  await expect(page.getByTestId('editor-content')).toBeVisible({ timeout: 8000 })
 })
 
 test('typing in editor triggers PUT /api/jobs/:jobId/cv', async ({ page }) => {
@@ -47,7 +47,7 @@ test('typing in editor triggers PUT /api/jobs/:jobId/cv', async ({ page }) => {
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  const editor = page.getByTestId('editor-textarea')
+  const editor = page.getByTestId('editor-content')
   await expect(editor).toBeVisible({ timeout: 8000 })
   await editor.fill(CV_TEXT)
 
@@ -69,8 +69,8 @@ test('editor content persists after reload', async ({ page }) => {
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  const editor = page.getByTestId('editor-textarea')
-  await expect(editor).toHaveValue(CV_TEXT, { timeout: 8000 })
+  const editor = page.getByTestId('editor-content')
+  await expect(editor).toContainText(CV_TEXT, { timeout: 8000 })
 })
 
 test('sending a chat message includes context cv and jobDescription', async ({ page }) => {
@@ -89,8 +89,7 @@ test('sending a chat message includes context cv and jobDescription', async ({ p
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  const editor = page.getByTestId('editor-textarea')
-  await expect(editor).toBeVisible({ timeout: 8000 })
+  await expect(page.getByTestId('editor-content')).toBeVisible({ timeout: 8000 })
 
   await page.getByPlaceholder('Ask AI to modify your document...').fill('What should I emphasise?')
   await page.getByRole('button', { name: 'Send' }).click()
@@ -112,7 +111,7 @@ test('"Want me to write a first draft for you?" card is visible', async ({ page 
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  await expect(page.getByTestId('editor-textarea')).toBeVisible({ timeout: 8000 })
+  await expect(page.getByTestId('editor-content')).toBeVisible({ timeout: 8000 })
   await expect(page.getByText('Want me to write a first draft for you?')).toBeVisible()
 })
 
@@ -134,7 +133,7 @@ test('clicking "Tailor my CV for this role" fires POST /api/chat with cv context
 
   await page.goto(`/jobs/${JOB_ID}/cv`)
 
-  await expect(page.getByTestId('editor-textarea')).toBeVisible({ timeout: 8000 })
+  await expect(page.getByTestId('editor-content')).toBeVisible({ timeout: 8000 })
   await page.getByRole('button', { name: 'Tailor my CV for this role' }).click()
 
   const chatRequest = await chatPromise

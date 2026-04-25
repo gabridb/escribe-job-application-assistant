@@ -7,7 +7,7 @@ export interface RelevantExperienceEntry {
 
 const EDITOR_CONTENT_FORMAT = `When you write or revise the cover letter, wrap the full text in <editor_content> tags like this:
 <editor_content>
-[full cover letter text here]
+[full cover letter text here, formatted in Markdown — use **bold**, ## headings, and - bullet lists where appropriate]
 </editor_content>
 Then add one short sentence outside the tags explaining what you did. Do not include the cover letter text outside the tags.`
 
