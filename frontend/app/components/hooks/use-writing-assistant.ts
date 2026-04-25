@@ -50,6 +50,31 @@ export function useWritingAssistant(
   const [editorText, setEditorText] = useState(initialContent ?? '')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Diff state
+  const [pendingAiContent, setPendingAiContent] = useState<string | null>(null)
+  const [resolveMode, setResolveMode] = useState<'accept' | 'reject' | null>(null)
+  const [isFullRewrite, setIsFullRewrite] = useState(false)
+  const isDiffMode = pendingAiContent !== null
+
+  const acceptAiChange = useCallback(() => {
+    setResolveMode('accept')
+  }, [])
+
+  const rejectAiChange = useCallback(() => {
+    setResolveMode('reject')
+  }, [])
+
+  const handleDiffResolved = useCallback((finalMarkdown: string) => {
+    setEditorContent(finalMarkdown)
+    setPendingAiContent(null)
+    setResolveMode(null)
+    setIsFullRewrite(false)
+  }, [])
+
+  const handleFullRewrite = useCallback(() => {
+    setIsFullRewrite(true)
+  }, [])
+
   const sendPredefinedMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return
 
@@ -81,7 +106,7 @@ export function useWritingAssistant(
 
       const parsed = parseResponse(content)
       if (parsed.editorContent !== undefined) {
-        setEditorContent(parsed.editorContent)
+        setPendingAiContent(parsed.editorContent)
       }
       setMessages((prev) => [
         ...prev,
@@ -136,7 +161,7 @@ export function useWritingAssistant(
 
       const parsed = parseResponse(content)
       if (parsed.editorContent !== undefined) {
-        setEditorContent(parsed.editorContent)
+        setPendingAiContent(parsed.editorContent)
       }
       setMessages((prev) => [
         ...prev,
@@ -168,5 +193,14 @@ export function useWritingAssistant(
     sendMessage,
     sendPredefinedMessage,
     isLoading,
+    // Diff
+    pendingAiContent,
+    resolveMode,
+    isDiffMode,
+    isFullRewrite,
+    acceptAiChange,
+    rejectAiChange,
+    handleDiffResolved,
+    handleFullRewrite,
   }
 }

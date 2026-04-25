@@ -63,6 +63,14 @@ export default function WritingAssistant({
     sendMessage,
     sendPredefinedMessage,
     isLoading,
+    pendingAiContent,
+    resolveMode,
+    isDiffMode,
+    isFullRewrite,
+    acceptAiChange,
+    rejectAiChange,
+    handleDiffResolved,
+    handleFullRewrite,
   } = useWritingAssistant(
     context,
     initialGreeting,
@@ -86,6 +94,8 @@ export default function WritingAssistant({
   }, [messages])
 
   useEffect(() => {
+    // Suppress auto-save while a diff is pending
+    if (isDiffMode) return
     if (!onSave || editorContent === lastSavedRef.current) return
     setSaveStatus('pending')
     const timer = setTimeout(async () => {
@@ -98,7 +108,7 @@ export default function WritingAssistant({
       }
     }, 1500)
     return () => clearTimeout(timer)
-  }, [editorContent, onSave])
+  }, [editorContent, onSave, isDiffMode])
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
@@ -161,7 +171,7 @@ export default function WritingAssistant({
                       variant="outline"
                       size="sm"
                       onClick={() => sendPredefinedMessage(reply.message)}
-                      disabled={isLoading}
+                      disabled={isLoading || isDiffMode}
                       className="w-full justify-start"
                     >
                       {reply.label}
@@ -187,7 +197,7 @@ export default function WritingAssistant({
                       variant="outline"
                       size="sm"
                       onClick={() => { setReviewedWordCount(currentWordCount); sendPredefinedMessage(reply.message) }}
-                      disabled={isLoading}
+                      disabled={isLoading || isDiffMode}
                       className="w-full justify-start"
                     >
                       {reply.label}
@@ -206,13 +216,13 @@ export default function WritingAssistant({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                disabled={isLoading}
+                disabled={isLoading || isDiffMode}
                 placeholder="Ask AI to modify your document..."
                 className="flex-1 rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#4a5c2f]/40 disabled:opacity-50"
               />
               <button
                 onClick={sendMessage}
-                disabled={isLoading}
+                disabled={isLoading || isDiffMode}
                 className="px-3 py-2 rounded-md text-sm font-medium text-white bg-[#4a5c2f] hover:bg-[#3a4a24] transition-colors disabled:opacity-50"
               >
                 Send
@@ -234,11 +244,23 @@ export default function WritingAssistant({
                 <p className="text-sm text-stone-500 mt-1 italic">{theme.description}</p>
               )}
             </div>
-            {onSave && saveStatus === 'pending' && (
-              <span className="text-sm text-stone-400">Saving...</span>
-            )}
-            {onSave && saveStatus === 'saved' && (
-              <span className="text-sm text-emerald-600">Saved</span>
+            {isDiffMode ? (
+              <div className="flex items-center gap-2" data-testid="diff-bar">
+                <span className="text-xs text-stone-400">
+                  {isFullRewrite ? 'Full document replaced' : 'AI suggested changes'}
+                </span>
+                <Button size="sm" onClick={acceptAiChange} data-testid="accept-button">Accept</Button>
+                <Button size="sm" variant="outline" onClick={rejectAiChange} data-testid="reject-button">Reject</Button>
+              </div>
+            ) : (
+              <>
+                {onSave && saveStatus === 'pending' && (
+                  <span className="text-sm text-stone-400">Saving...</span>
+                )}
+                {onSave && saveStatus === 'saved' && (
+                  <span className="text-sm text-emerald-600">Saved</span>
+                )}
+              </>
             )}
           </div>
           <RichTextEditor
@@ -250,6 +272,10 @@ export default function WritingAssistant({
                 ? 'Use the STAR framework to structure your answer: Situation, Task, Action, Result...'
                 : 'Start writing here...'
             }
+            pendingDiffContent={pendingAiContent}
+            resolveMode={resolveMode}
+            onResolved={handleDiffResolved}
+            onFullRewrite={handleFullRewrite}
           />
         </div>
     </div>

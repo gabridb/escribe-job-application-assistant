@@ -116,6 +116,16 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.tiptap-insertion {
+  background-color: rgb(187 247 208); /* emerald-200 */
+  border-radius: 2px;
+}
+.tiptap-deletion {
+  background-color: rgb(254 202 202); /* red-200 */
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

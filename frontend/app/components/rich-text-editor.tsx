@@ -1,17 +1,23 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Markdown } from 'tiptap-markdown'
 import { Bold, Italic, List, ListOrdered, Heading2, Minus } from 'lucide-react'
+import { InsertionMark, DeletionMark } from './tiptap-extensions/diff-marks'
+import { applyDiffToEditor } from './tiptap-extensions/apply-diff'
 
 interface RichTextEditorProps {
   content: string
   onChange: (markdown: string) => void
   onTextChange: (text: string) => void
   placeholder?: string
+  pendingDiffContent?: string | null
+  resolveMode?: 'accept' | 'reject' | null
+  onResolved?: (markdown: string) => void
+  onFullRewrite?: () => void
 }
 
 export default function RichTextEditor({
@@ -19,13 +25,21 @@ export default function RichTextEditor({
   onChange,
   onTextChange,
   placeholder,
+  pendingDiffContent,
+  resolveMode,
+  onResolved,
+  onFullRewrite,
 }: RichTextEditorProps) {
+  const originalSnapshot = useRef<string>('')
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder }),
       Markdown.configure({ html: false }),
+      InsertionMark,
+      DeletionMark,
     ],
     content,
     editorProps: {
@@ -43,6 +57,8 @@ export default function RichTextEditor({
   // Sync external content changes (e.g. AI overwrites the editor)
   useEffect(() => {
     if (!editor) return
+    // Don't sync while a diff is pending — the editor is showing diff marks
+    if (pendingDiffContent !== undefined && pendingDiffContent !== null) return
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const current = (editor.storage as any).markdown.getMarkdown()
     if (content !== current) {
@@ -50,6 +66,47 @@ export default function RichTextEditor({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, editor])
+
+  // Diff effect — fires when pendingDiffContent becomes non-null
+  useEffect(() => {
+    if (!editor || pendingDiffContent === null || pendingDiffContent === undefined) return
+
+    // Snapshot current content before showing diff
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    originalSnapshot.current = (editor.storage as any).markdown.getMarkdown()
+
+    editor.setEditable(false)
+
+    const inlineDiffApplied = applyDiffToEditor(editor, originalSnapshot.current, pendingDiffContent)
+    if (!inlineDiffApplied) {
+      // Full rewrite — show the proposed content so the user can see what Accept/Reject applies to
+      editor.commands.setContent(pendingDiffContent)
+      onFullRewrite?.()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingDiffContent])
+
+  // Resolve effect — fires when resolveMode changes
+  useEffect(() => {
+    if (!editor || resolveMode === null || resolveMode === undefined) return
+
+    editor.setEditable(true)
+
+    if (resolveMode === 'accept') {
+      editor.commands.setContent(pendingDiffContent ?? '')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const markdown = (editor.storage as any).markdown.getMarkdown()
+      onChange(markdown)
+      onResolved?.(markdown)
+    } else {
+      editor.commands.setContent(originalSnapshot.current)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const markdown = (editor.storage as any).markdown.getMarkdown()
+      onChange(markdown)
+      onResolved?.(markdown)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolveMode])
 
   if (!editor) return null
 
