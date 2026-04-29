@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist } from "next/font/google"
+import { Inter_Tight, JetBrains_Mono } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
 import "./globals.css"
@@ -8,8 +8,12 @@ import { ThemesProvider } from "./context/themes-context"
 import UserMenu from "./components/user-menu"
 import type { Job } from "@/lib/mock/jobs"
 
-const geist = Geist({
+const interTight = Inter_Tight({
   variable: "--font-sans",
+  subsets: ["latin"],
+})
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 })
 
@@ -39,7 +43,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geist.variable} antialiased min-h-screen bg-stone-50`}>
+      <body className={`${interTight.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-stone-50`}>
         <JobsProvider initialJobs={initialJobs}>
           <ThemesProvider initialThemes={[]}>
           <header className="border-b border-stone-200 bg-white">
