@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { sendChatMessage, RelevantExperienceEntry } from '@/lib/services/chat-service'
+import {
+  sendChatMessage,
+  RelevantExperienceEntry,
+  ThemeCoverage,
+} from '@/lib/services/chat-service'
 
 export type WritingContext = 'relevant-experience' | 'cover-letter' | 'cv'
 
@@ -9,6 +13,12 @@ export interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
+  experienceCandidate?: ExperienceCandidate
+}
+
+export interface ExperienceCandidate {
+  themeName: string
+  text: string
 }
 
 export interface SuggestedReply {
@@ -20,16 +30,44 @@ function generateId(): string {
   return Math.random().toString(36).slice(2, 9)
 }
 
-function parseResponse(raw: string): { editorContent?: string; chatMessage: string } {
-  const match = raw.match(/<editor_content>([\s\S]*?)<\/editor_content>/)
-  if (match) {
-    const editorContent = match[1].trim()
-    const chatMessage =
-      raw.replace(/<editor_content>[\s\S]*?<\/editor_content>/, '').trim() ||
-      'Done! Your document is in the editor on the right.'
-    return { editorContent, chatMessage }
+function parseResponse(raw: string): {
+  editorContent?: string
+  chatMessage: string
+  experienceCandidate?: ExperienceCandidate
+} {
+  let working = raw
+  let editorContent: string | undefined
+  let experienceCandidate: ExperienceCandidate | undefined
+
+  const editorMatch = working.match(/<editor_content>([\s\S]*?)<\/editor_content>/)
+  if (editorMatch) {
+    editorContent = editorMatch[1].trim()
+    working = working.replace(/<editor_content>[\s\S]*?<\/editor_content>/, '')
   }
-  return { chatMessage: raw }
+
+  const candidateMatch = working.match(
+    /<experience_candidate\s+theme=("|')([^"']+)\1\s*>([\s\S]*?)<\/experience_candidate>/,
+  )
+  if (candidateMatch) {
+    experienceCandidate = {
+      themeName: candidateMatch[2].trim(),
+      text: candidateMatch[3].trim(),
+    }
+    working = working.replace(
+      /<experience_candidate\s+theme=("|')[^"']+\1\s*>[\s\S]*?<\/experience_candidate>/,
+      '',
+    )
+  }
+
+  const trimmed = working.trim()
+  const chatMessage =
+    trimmed.length > 0
+      ? trimmed
+      : editorContent
+        ? 'Done! Your document is in the editor on the right.'
+        : ''
+
+  return { editorContent, chatMessage, experienceCandidate }
 }
 
 export function useWritingAssistant(
@@ -41,6 +79,7 @@ export function useWritingAssistant(
   initialContent?: string,
   baseCvText?: string,
   relevantExperiences?: RelevantExperienceEntry[],
+  themes?: ThemeCoverage[],
 ) {
   const [messages, setMessages] = useState<Message[]>([
     { id: generateId(), role: 'assistant', content: initialGreeting },
@@ -102,6 +141,7 @@ export function useWritingAssistant(
         editorContent,
         baseCvText,
         relevantExperiences,
+        themes,
       })
 
       const parsed = parseResponse(content)
@@ -110,7 +150,12 @@ export function useWritingAssistant(
       }
       setMessages((prev) => [
         ...prev,
-        { id: generateId(), role: 'assistant', content: parsed.chatMessage },
+        {
+          id: generateId(),
+          role: 'assistant',
+          content: parsed.chatMessage,
+          experienceCandidate: parsed.experienceCandidate,
+        },
       ])
     } catch (err) {
       console.error('Chat error:', err)
@@ -125,7 +170,7 @@ export function useWritingAssistant(
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText, relevantExperiences])
+  }, [isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText, relevantExperiences, themes])
 
   const sendMessage = useCallback(async () => {
     const trimmed = input.trim()
@@ -157,6 +202,7 @@ export function useWritingAssistant(
         editorContent,
         baseCvText,
         relevantExperiences,
+        themes,
       })
 
       const parsed = parseResponse(content)
@@ -165,7 +211,12 @@ export function useWritingAssistant(
       }
       setMessages((prev) => [
         ...prev,
-        { id: generateId(), role: 'assistant', content: parsed.chatMessage },
+        {
+          id: generateId(),
+          role: 'assistant',
+          content: parsed.chatMessage,
+          experienceCandidate: parsed.experienceCandidate,
+        },
       ])
     } catch (err) {
       console.error('Chat error:', err)
@@ -180,7 +231,7 @@ export function useWritingAssistant(
     } finally {
       setIsLoading(false)
     }
-  }, [input, isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText, relevantExperiences])
+  }, [input, isLoading, messages, context, jobDescription, themeName, themeDescription, editorContent, baseCvText, relevantExperiences, themes])
 
   return {
     messages,

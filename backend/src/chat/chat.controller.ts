@@ -5,7 +5,11 @@ import {
   buildRelevantExperienceSystemPrompt,
   RELEVANT_EXPERIENCE_MODEL,
 } from '../relevant-experience/relevant-experience.prompts'
-import { buildCoverLetterSystemPrompt, RelevantExperienceEntry } from '../cover-letter/cover-letter.prompts'
+import {
+  buildCoverLetterSystemPrompt,
+  RelevantExperienceEntry,
+  ThemeCoverage,
+} from '../cover-letter/cover-letter.prompts'
 import { buildTailoredCvSystemPrompt } from '../tailored-cv/tailored-cv.prompts'
 
 interface ChatMessage {
@@ -22,6 +26,7 @@ interface ChatRequestBody {
   editorContent?: string
   baseCvText?: string
   relevantExperiences?: RelevantExperienceEntry[]
+  themes?: ThemeCoverage[]
 }
 
 @Controller()
@@ -54,7 +59,13 @@ export class ChatController {
             }
           : body.context === 'cover-letter'
             ? {
-                systemPrompt: buildCoverLetterSystemPrompt(body.baseCvText, body.jobDescription, body.relevantExperiences, editorContent),
+                systemPrompt: buildCoverLetterSystemPrompt(
+                  body.baseCvText,
+                  body.jobDescription,
+                  body.relevantExperiences,
+                  editorContent,
+                  body.themes,
+                ),
                 model: GENERIC_MODEL,
               }
             : {

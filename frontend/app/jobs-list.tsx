@@ -54,7 +54,6 @@ export default function JobsList() {
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Company</th>
                 <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Key Themes</th>
                 <th className="px-4 py-3 font-medium">Cover Letter</th>
                 <th className="px-4 py-3 font-medium">CV</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
@@ -67,20 +66,16 @@ export default function JobsList() {
                   className="border-b border-stone-100 last:border-0 hover:bg-stone-50 transition-colors"
                 >
                   <td className="px-4 py-3 font-medium text-stone-900">
-                    {job.title}
+                    <Link
+                      href={`/jobs/${job.id}`}
+                      className="hover:underline"
+                      data-testid={`job-row-title-${job.id}`}
+                    >
+                      {job.title}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-stone-600">{job.company}</td>
                   <td className="px-4 py-3 text-stone-600">{job.createdAt}</td>
-                  <td className="px-4 py-3">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="text-stone-700 border-stone-300"
-                    >
-                      <Link href={`/jobs/${job.id}/themes`}>Key Themes</Link>
-                    </Button>
-                  </td>
                   <td className="px-4 py-3">
                     <Button
                       asChild

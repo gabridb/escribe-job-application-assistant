@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { useWritingAssistant, WritingContext, SuggestedReply } from './hooks/use-writing-assistant'
-import { RelevantExperienceEntry } from '@/lib/services/chat-service'
+import { RelevantExperienceEntry, ThemeCoverage } from '@/lib/services/chat-service'
 import { useThemes } from '@/app/context/themes-context'
 import { useJobs } from '@/app/context/jobs-context'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,8 @@ interface WritingAssistantProps {
   jobDescription?: string
   baseCvText?: string
   relevantExperiences?: RelevantExperienceEntry[]
+  themes?: ThemeCoverage[]
+  onSaveExperienceCandidate?: (themeName: string, text: string) => Promise<boolean>
   onSave?: (text: string) => Promise<void>
 }
 
@@ -41,6 +43,8 @@ export default function WritingAssistant({
   jobDescription,
   baseCvText,
   relevantExperiences,
+  themes: themeCoverage,
+  onSaveExperienceCandidate,
   onSave,
 }: WritingAssistantProps) {
   const { themes } = useThemes()
@@ -80,7 +84,10 @@ export default function WritingAssistant({
     initialContent,
     baseCvText,
     relevantExperiences,
+    themeCoverage,
   )
+
+  const [candidateStatus, setCandidateStatus] = useState<Record<string, 'idle' | 'saving' | 'saved' | 'dismissed' | 'error'>>({})
 
   const [reviewedWordCount, setReviewedWordCount] = useState(0)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'pending' | 'saved'>('idle')
@@ -131,13 +138,73 @@ export default function WritingAssistant({
                 </div>
               ) : (
                 <div key={message.id} className="flex justify-start">
-                  <div className="max-w-[85%]">
-                    <span className="inline-block mb-1 px-1.5 py-0.5 rounded text-xs font-medium bg-cyan-100 text-cyan-700">
+                  <div className="max-w-[85%] flex flex-col gap-2">
+                    <span className="inline-block mb-0 px-1.5 py-0.5 rounded text-xs font-medium bg-cyan-100 text-cyan-700 self-start">
                       AI
                     </span>
-                    <div className="px-3 py-2 rounded-lg bg-cyan-50 border border-cyan-100 text-sm text-stone-800 whitespace-pre-wrap">
-                      {message.content}
-                    </div>
+                    {message.content && (
+                      <div className="px-3 py-2 rounded-lg bg-cyan-50 border border-cyan-100 text-sm text-stone-800 whitespace-pre-wrap">
+                        {message.content}
+                      </div>
+                    )}
+                    {message.experienceCandidate && candidateStatus[message.id] !== 'dismissed' && (
+                      <div
+                        data-testid="experience-candidate-card"
+                        className="rounded-lg border border-stone-200 bg-white p-3 flex flex-col gap-2 shadow-sm"
+                      >
+                        <p className="text-sm text-stone-700">
+                          This looks like a great story for{' '}
+                          <span className="font-medium text-stone-900">
+                            {message.experienceCandidate.themeName}
+                          </span>
+                          . Save it to your Experience Library so you can reuse it?
+                        </p>
+                        {candidateStatus[message.id] === 'saved' ? (
+                          <p className="text-xs text-emerald-600">Saved to Experience Library.</p>
+                        ) : candidateStatus[message.id] === 'error' ? (
+                          <p className="text-xs text-red-600">
+                            Couldn&apos;t save — make sure the theme exists, then try again.
+                          </p>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              data-testid="experience-candidate-save"
+                              disabled={
+                                candidateStatus[message.id] === 'saving' ||
+                                !onSaveExperienceCandidate
+                              }
+                              onClick={async () => {
+                                if (!onSaveExperienceCandidate || !message.experienceCandidate) return
+                                setCandidateStatus((prev) => ({ ...prev, [message.id]: 'saving' }))
+                                const ok = await onSaveExperienceCandidate(
+                                  message.experienceCandidate.themeName,
+                                  message.experienceCandidate.text,
+                                )
+                                setCandidateStatus((prev) => ({
+                                  ...prev,
+                                  [message.id]: ok ? 'saved' : 'error',
+                                }))
+                              }}
+                              style={{ backgroundColor: '#4a5c2f' }}
+                              className="text-white hover:opacity-90"
+                            >
+                              {candidateStatus[message.id] === 'saving' ? 'Saving…' : 'Save'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              data-testid="experience-candidate-dismiss"
+                              onClick={() =>
+                                setCandidateStatus((prev) => ({ ...prev, [message.id]: 'dismissed' }))
+                              }
+                            >
+                              Dismiss
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )

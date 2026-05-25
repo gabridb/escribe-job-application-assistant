@@ -20,7 +20,7 @@ interface NewJobDialogProps {
 export default function NewJobDialog({ open, onOpenChange }: NewJobDialogProps) {
   const router = useRouter()
   const { description, setDescription, handleSubmit, isLoading } =
-    useNewJob((jobId) => { onOpenChange(false); router.push(`/jobs/${jobId}/themes`) })
+    useNewJob((jobId) => { onOpenChange(false); router.push(`/jobs/${jobId}`) })
   const inputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {

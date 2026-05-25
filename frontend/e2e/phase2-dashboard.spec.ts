@@ -23,9 +23,17 @@ test('add job offer form renders with textarea', async ({ page }) => {
   await expect(page.getByRole('button', { name: /add job offer/i })).toBeVisible()
 })
 
-// MTI 5: Submitting the form adds the job and redirects to themes page
-test('submitting the form adds job and navigates to themes', async ({ page }) => {
+// MTI 5: Submitting the form adds the job and redirects to the job overview page
+test('submitting the form adds job and navigates to job overview', async ({ page }) => {
   const jobId = 'new-job-dashboard-test'
+  const jobJson = {
+    id: jobId,
+    title: 'Head of Engineering',
+    company: 'Acme Corp',
+    description: 'We are looking for a strong engineering leader.',
+    status: 'active',
+    createdAt: '2026-03-20',
+  }
 
   await page.route('**/api/jobs', async (route) => {
     if (route.request().method() === 'GET') {
@@ -33,18 +41,14 @@ test('submitting the form adds job and navigates to themes', async ({ page }) =>
     }
     return route.fulfill({
       json: {
-        id: jobId,
-        title: 'Head of Engineering',
-        company: 'Acme Corp',
-        description: 'We are looking for a strong engineering leader.',
-        status: 'active',
-        createdAt: '2026-03-20',
+        ...jobJson,
         themes: [
           { id: 'theme-1', jobId, name: 'Leadership', description: 'Lead teams.', status: 'todo' },
         ],
       },
     })
   })
+  await page.route(`**/api/jobs/${jobId}`, (route) => route.fulfill({ json: jobJson }))
   await page.route(`**/api/jobs/${jobId}/themes`, (route) =>
     route.fulfill({
       json: [{ id: 'theme-1', jobId, name: 'Leadership', description: 'Lead teams.', status: 'todo' }],
@@ -58,7 +62,7 @@ test('submitting the form adds job and navigates to themes', async ({ page }) =>
 
   await page.getByRole('button', { name: /add job offer/i }).click()
 
-  // Redirects to themes page after backend responds
-  await expect(page).toHaveURL(`/jobs/${jobId}/themes`, { timeout: 10000 })
-  await expect(page.getByRole('heading', { name: 'Key Interview Themes' })).toBeVisible()
+  // Redirects to the job overview page after backend responds
+  await expect(page).toHaveURL(`/jobs/${jobId}`, { timeout: 10000 })
+  await expect(page.getByRole('heading', { name: 'Head of Engineering' })).toBeVisible()
 })

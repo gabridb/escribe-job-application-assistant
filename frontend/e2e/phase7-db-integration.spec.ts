@@ -40,8 +40,16 @@ test('themes page shows correct statuses from backend', async ({ page }) => {
   await expect(page.getByText('Done')).toBeVisible()
 })
 
-test('creating a job POSTs to backend and navigates to themes page', async ({ page }) => {
+test('creating a job POSTs to backend and navigates to job overview', async ({ page }) => {
   const newJobId = 'p7-new-job'
+  const newJob = {
+    id: newJobId,
+    title: 'Platform Engineer',
+    company: 'NewCo',
+    description: 'Looking for a platform engineer.',
+    status: 'active',
+    createdAt: '2026-03-20',
+  }
 
   await page.route('**/api/jobs', async (route) => {
     if (route.request().method() === 'GET') {
@@ -49,18 +57,14 @@ test('creating a job POSTs to backend and navigates to themes page', async ({ pa
     }
     return route.fulfill({
       json: {
-        id: newJobId,
-        title: 'Platform Engineer',
-        company: 'NewCo',
-        description: 'Looking for a platform engineer.',
-        status: 'active',
-        createdAt: '2026-03-20',
+        ...newJob,
         themes: [
           { id: 'new-theme-1', jobId: newJobId, name: 'DevOps', description: 'CI/CD pipelines.', status: 'todo' },
         ],
       },
     })
   })
+  await page.route(`**/api/jobs/${newJobId}`, (route) => route.fulfill({ json: newJob }))
   await page.route(`**/api/jobs/${newJobId}/themes`, (route) =>
     route.fulfill({
       json: [{ id: 'new-theme-1', jobId: newJobId, name: 'DevOps', description: 'CI/CD pipelines.', status: 'todo' }],
@@ -71,8 +75,8 @@ test('creating a job POSTs to backend and navigates to themes page', async ({ pa
   await page.getByPlaceholder('Paste or type a job offer here').fill('Platform Engineer at NewCo')
   await page.getByRole('button', { name: /add job offer/i }).click()
 
-  await expect(page).toHaveURL(`/jobs/${newJobId}/themes`, { timeout: 10000 })
-  await expect(page.getByRole('heading', { name: 'Key Interview Themes' })).toBeVisible()
+  await expect(page).toHaveURL(`/jobs/${newJobId}`, { timeout: 10000 })
+  await expect(page.getByRole('heading', { name: 'Platform Engineer' })).toBeVisible()
 })
 
 test('add job button shows spinner while backend is processing', async ({ page }) => {

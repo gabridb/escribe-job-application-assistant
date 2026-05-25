@@ -1,25 +1,20 @@
 # Escribe — Build Progress
 
-Improvements:
+Improvements / known issues:
 
-- Edit job metadata, for example if the name of the company is unknown I should be able to add it
 - Para escribir la cl, se envía todas las relevantExperiences al llm. Un agente tendría primero que resumirlas si quiero que sea más corto
+- Bug: the pencil (edit) icon in the Dashboard Actions column is not visible — the edit-job-metadata feature works but the affordance is missing
+- Cover Letter chat opens with a generic "Hello! I'm your AI writing assistant…" greeting that gives the user no starting point. The first message should be task-aware — e.g. reference the specific job/company and suggest a concrete next step (the "Draft a first version" button already exists, so the greeting should complement it, not duplicate it).
+- AI-generated cover letters need visible spacing between paragraphs in the editor (currently paragraphs render too close together — either tweak the editor's paragraph margin or ensure the AI output produces blank lines that Tiptap renders with proper vertical rhythm).
+- "Write Cover Letter" and "Tailor CV" should be a single continuous flow, not two separate destinations from the Job Overview page. After finishing the cover letter the user should be guided straight into tailoring the CV (or vice versa) without having to navigate back to Job Overview and pick the other CTA.
 
 ---
 
-## Deferred: Diff system for AI suggestions
+## Done: Diff system for AI suggestions
 
-**Decision: not building this now.**
+Implemented in commit `0ad4038` — when the AI returns a rewrite, the editor now shows a **word-level inline diff** (green = added, red struck-through = deletion) with an Accept/Reject bar instead of silently overwriting the user's draft. Auto-save is paused and chat is disabled while a diff is pending. If the AI replaces more than ~80% of the document, the editor shows the proposed content with a "Full document replaced" banner instead of noisy mark-up.
 
-When the AI rewrites a document (cover letter, CV), it currently replaces the editor content immediately. A diff system would show what changed before the user accepts it.
-
-Three options were considered:
-
-- **A — Accept/Reject all:** Simple. Holds the AI response as a "pending suggestion", user accepts or discards the whole thing. Works fine for full rewrites but offers no granularity.
-- **B — Inline tracked changes (preferred UX):** Computes a diff client-side and shows additions/deletions inline (green/red), user accepts per-hunk like Google Docs. Best experience but high complexity — needs either a custom diff renderer or a rich text editor with built-in track-changes support.
-- **C — AI outputs structured patches:** The AI returns a JSON list of targeted edits instead of a full rewrite. Fragile — LLMs drift from strict formats, "find this text" breaks on duplicates, positional references go out of sync after edits. High prompt engineering cost for unreliable results.
-
-**Why deferred:** B is the right UX but too complex for now. C is weak. A is buildable but adds little value since the AI rewrites the whole document anyway — the user can already just undo.
+This corresponds to **Option B (Inline tracked changes)** from the original deferred plan, made tractable by adopting Tiptap as the rich text editor (custom InsertionMark / DeletionMark extensions + the `diff` package).
 
 Cada paso es un **Minimum Testeable Increment (MTI)**: termina con algo que puedes abrir en el navegador y verificar que funciona.
 
@@ -177,9 +172,10 @@ _Deferred — pages are stubs only._
 
 ## Phase 9 — Cover Letter
 
-- ⬜ **Cover Letter persistence** → `GET /api/jobs/:jobId/cover-letter` returns saved text; `PUT` saves it
-- ⬜ **Cover Letter auto-save** → typing in the editor triggers a debounced save (shows "Saved" indicator)
-- ⬜ **Cover Letter AI prompt** → chat uses a specialised system prompt with job description + base CV context
+- ✅ **Cover Letter persistence** → `GET /api/jobs/:jobId/cover-letter` returns saved text; `PUT` saves it
+- ✅ **Cover Letter auto-save** → typing in the editor triggers a debounced save (shows "Saved" indicator)
+- ✅ **Cover Letter AI prompt** → chat uses a specialised system prompt with job description, base CV, and all relevant experiences as context
+- ✅ **AI writes into editor via `<editor_content>` tags** → AI-generated drafts are routed straight into the editor instead of staying in chat
 
 **Test manual al completar la fase:**
 
@@ -187,6 +183,124 @@ _Deferred — pages are stubs only._
 - [ ] Type in the editor → "Saved" indicator appears after ~1.5 s
 - [ ] Reload the page → typed text is still there
 - [ ] Send a chat message ("Help me write an opening paragraph") → AI response references the specific job
+
+---
+
+## Phase 10 — Edit Job Metadata
+
+- ✅ **PATCH `/api/jobs/:id`** → backend accepts partial updates of title and company
+- ✅ **Edit dialog from Dashboard** → pencil icon on each job row opens a pre-filled dialog to edit title and company
+
+**Test manual al completar la fase:**
+
+- [ ] Click the pencil icon on a job row → dialog opens pre-filled with current title and company
+- [ ] Edit the company and save → the row in the dashboard reflects the new value immediately
+- [ ] Reload → the change persists
+
+---
+
+## Phase 11 — Tailored CV
+
+- ✅ **CV writer pulls full job context** → fetches job description and all relevant experiences and passes them to the chat prompt
+- ✅ **Dedicated tailored-cv prompts module** → `tailored-cv.prompts.ts` builds the system prompt for CV-specific guidance (separate from generic chat prompts)
+- ✅ **"Tailor my CV for this role" auto-write** → one-click button generates a first draft directly into the editor
+
+**Test manual al completar la fase:**
+
+- [ ] Open `/jobs/:jobId/cv` for a job with relevant experiences saved → click the auto-write button → editor populates with a tailored first draft
+- [ ] Chat in the CV page ("emphasise leadership") → the response references the actual job description, not generic advice
+
+---
+
+## Phase 12 — Smart Experience Matching
+
+- ✅ **Auto-match similar experiences when opening Writing Assistant** → if a theme has no saved experience, the backend compares the theme against all existing experiences with an LLM and pre-populates the editor with the closest match
+- ✅ **Chat explains the source** → the assistant's first message explains where the matched story came from so the user can adapt it
+- ✅ **One-retry fallback for transient `ECONNRESET`** → makes the chat resilient to flaky OpenRouter connections
+
+**Test manual al completar la fase:**
+
+- [ ] Write an experience for one theme, then open another theme with similar wording → editor pre-populates with the matched story and chat explains the match
+- [ ] Open a theme with no matching prior experience → editor stays empty, chat starts from the standard greeting
+
+---
+
+## Phase 13 — Rich Text Editor + Inline AI Diffs
+
+- ✅ **Tiptap rich text editor** → replaces the plain `<textarea>` with a Tiptap-backed editor (Bold / Italic / Heading / List toolbar, markdown-backed persistence, placeholder support)
+- ✅ **AI-generated content lands in the editor as Markdown** → cover-letter and tailored-CV prompts ask the AI to return Markdown inside `<editor_content>` tags
+- ✅ **Inline AI diff highlighting with Accept/Reject** → AI rewrites are shown as a word-level diff (green = added, red struck-through = removed) with an Accept/Reject bar
+- ✅ **"Full document replaced" banner** → when the AI replaces more than ~80% of the document, the editor shows the proposed content with a banner instead of noisy mark-up
+- ✅ **Auto-save and chat input disabled while a diff is pending** → prevents racing the user's review of the suggestion
+- ✅ **Shared no-fabrication guardrail in chat** → tightened relevant-experience coaching prompt so the AI does not invent facts about the user
+
+**Test manual al completar la fase:**
+
+- [ ] Write a paragraph in the editor with bold and a bullet list → reload → formatting persists
+- [ ] Ask the AI for a small rewrite → editor shows green/red diff with an Accept/Reject bar; auto-save indicator pauses
+- [ ] Click Accept → diff marks disappear and the new text is saved
+- [ ] Ask the AI for a full rewrite of a long document → "Full document replaced" banner appears with Accept/Reject
+
+---
+
+## Phase 14 — Simplified Application Flow
+
+Plan: `Specs/plans/simplify-application-flow.md`
+
+Goal: remove the "fill in every theme before doing useful work" friction. After adding a job the user lands on a new **Job Overview** page; the Cover Letter Writing Assistant becomes the primary work surface and uses themes internally to coach the conversation. Stories the user tells in chat can be saved into the Experience Library with one click (semi-automatic).
+
+- ✅ **Backend: theme-aware cover-letter prompt** → `buildCoverLetterSystemPrompt` accepts a `themes` argument (with `hasExperience` flag); when uncovered themes exist, the system prompt instructs the AI to coach the user around them and to wrap candidate STAR stories in `<experience_candidate theme="...">` tags
+- ✅ **Frontend: cover-letter writer passes themes-with-coverage** → fetches each theme's experience status alongside the cover letter and forwards the list to `/api/chat`
+- ✅ **Frontend: experience-candidate card in chat** → chat parses `<experience_candidate>` tags from AI replies, strips them from the visible message, and renders an inline Save / Dismiss card; Save calls the existing experience endpoint
+- ✅ **Frontend: new Job Overview page** → `/jobs/:jobId` shows title, company, themes summary and three CTAs (Cover Letter / Tailor CV / Interview themes); `useNewJob` and `NewJobDialog` redirect here instead of `/themes`; Dashboard row title links to Job Overview
+
+**Test manual al completar la fase:**
+
+- [ ] Crear un job nuevo desde el Dashboard → la URL final es `/jobs/:jobId` (Job Overview), no `/jobs/:jobId/themes`
+- [ ] La Job Overview muestra título, empresa y los tres CTAs (Write Cover Letter, Tailor CV, Interview themes)
+- [ ] Desde el Dashboard, el row del job lleva a la Job Overview (no a Themes directamente)
+- [ ] En la Cover Letter de un job con themes sin experiencia escrita, el AI saca a colación una de esas competencias de forma natural
+- [ ] Contar una historia STAR en el chat → aparece una tarjeta inline "Save as reusable experience for [theme]?" con Save / Dismiss
+- [ ] Clicar Save → la experiencia aparece en `/experience` y queda asociada al theme correcto
+- [ ] Clicar Dismiss → la tarjeta desaparece sin llamadas al backend
+- [ ] La ruta `/jobs/:jobId/themes` sigue accesible desde Job Overview y funciona como antes
+
+---
+
+## Phase 15 — LinkedIn Job Auto-Discovery
+
+Goal: remove the copy-paste step. Instead of pasting a job description into "Add Job Offer", the user configures a search profile (keywords, location, seniority, remote/onsite) and the app pulls matching opportunities from `linkedin.com/jobs` on a schedule, presents them in a **Discover** inbox, and lets the user one-click "Add to Dashboard" to kick off the existing analysis pipeline.
+
+- ⬜ **Backend: LinkedIn search profile entity + CRUD** → `SearchProfile` (keywords, location, seniority, remote flag, isActive); `GET/POST/PATCH/DELETE /api/search-profiles`
+- ⬜ **Backend: LinkedIn scraper service** → fetches the public LinkedIn jobs search page for each active profile, parses job cards (title, company, location, posted date, jobUrl, descriptionSnippet); respects robots.txt and uses conservative rate limits with retry/backoff
+- ⬜ **Backend: discovered-job entity + dedup** → `DiscoveredJob` keyed on LinkedIn jobId, status (`new` / `dismissed` / `imported`); upsert prevents duplicates across runs
+- ⬜ **Backend: scheduled scan job** → NestJS `@Cron` runs every N hours, iterates active profiles, persists new `DiscoveredJob` rows; manual trigger via `POST /api/search-profiles/:id/scan`
+- ⬜ **Backend: hydrate full description on import** → when the user imports a discovered job, fetch the full description from the LinkedIn job URL and feed it into the existing `POST /api/jobs` pipeline (metadata + themes)
+- ⬜ **Frontend: `/discover` inbox page** → list of `DiscoveredJob` cards (title, company, location, posted, snippet) with **Add to Dashboard** / **Dismiss** actions; filter by profile; badge in nav with new-count
+- ⬜ **Frontend: `/settings/search-profiles` page** → create/edit/delete search profiles; toggle active; "Scan now" button per profile
+- ⬜ **Frontend: Dashboard CTA** → "Discover jobs" button next to "Add Job Offer" that links to `/discover`
+
+**Test manual al completar la fase:**
+
+- [ ] Crear un search profile (keywords "product manager", location "Madrid", remote on) → "Scan now" → al menos un `DiscoveredJob` aparece en `/discover`
+- [ ] El badge en el nav muestra el número de jobs nuevos
+- [ ] Clicar **Add to Dashboard** → el job se importa, la descripción completa se baja de LinkedIn, y aparece en el Dashboard con themes generados (igual que copy-paste)
+- [ ] Clicar **Dismiss** → la tarjeta desaparece de `/discover` y no vuelve en el siguiente scan
+- [ ] Correr "Scan now" dos veces seguidas → la segunda vez no duplica jobs ya descubiertos
+- [ ] Editar un search profile → el siguiente scan usa los nuevos criterios
+- [ ] Desactivar un search profile → el scheduled scan lo ignora
+
+**Riesgos / preguntas abiertas:**
+
+- LinkedIn ToS prohibe scraping; explorar la API oficial (LinkedIn Talent Solutions, requires partner approval) o un proveedor third-party (e.g. Apify, Bright Data) antes de implementar scraping directo
+- Manejo de cookies / login walls — la búsqueda pública funciona sin login pero el detalle suele requerirlo; evaluar si almacenar sesión del usuario o limitar al snippet
+
+---
+
+## Polish
+
+- ✅ **Bunny logo + favicon** → header logo and favicon
+- ✅ **Inter Tight + JetBrains Mono fonts** → swapped from Geist for the body / mono pair
 
 ---
 

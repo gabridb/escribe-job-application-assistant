@@ -8,6 +8,13 @@ export interface RelevantExperienceEntry {
   text: string
 }
 
+export interface ThemeCoverage {
+  id: string
+  name: string
+  description?: string
+  hasExperience: boolean
+}
+
 export interface ChatPayload {
   messages: ChatMessage[]
   context: 'relevant-experience' | 'cover-letter' | 'cv'
@@ -17,6 +24,7 @@ export interface ChatPayload {
   editorContent?: string
   baseCvText?: string
   relevantExperiences?: RelevantExperienceEntry[]
+  themes?: ThemeCoverage[]
 }
 
 export async function sendChatMessage(payload: ChatPayload): Promise<string> {

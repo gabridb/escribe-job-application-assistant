@@ -31,7 +31,7 @@ export function useNewJob(onSuccess?: (jobId: string) => void): UseNewJobReturn 
         if (onSuccess) {
           onSuccess(result.id)
         } else {
-          router.push(`/jobs/${result.id}/themes`)
+          router.push(`/jobs/${result.id}`)
         }
       } finally {
         setIsLoading(false)

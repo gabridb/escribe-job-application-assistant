@@ -1,4 +1,8 @@
-import { buildCoverLetterSystemPrompt, RelevantExperienceEntry } from './cover-letter.prompts';
+import {
+  buildCoverLetterSystemPrompt,
+  RelevantExperienceEntry,
+  ThemeCoverage,
+} from './cover-letter.prompts';
 
 describe('buildCoverLetterSystemPrompt', () => {
   it('contains "cover letter" and "job seeker" when called with no arguments', () => {
@@ -90,5 +94,44 @@ describe('buildCoverLetterSystemPrompt', () => {
     );
     expect(bare).toContain('Never invent');
     expect(full).toContain('Never invent');
+  });
+
+  describe('themes coaching', () => {
+    it('includes a coaching instruction referencing an uncovered theme name', () => {
+      const themes: ThemeCoverage[] = [
+        { name: 'Stakeholder Management', description: 'Aligning diverse stakeholders.', hasExperience: false },
+        { name: 'Leadership', hasExperience: true },
+      ];
+      const prompt = buildCoverLetterSystemPrompt(undefined, undefined, undefined, undefined, themes);
+      expect(prompt).toContain('Stakeholder Management');
+      expect(prompt.toLowerCase()).toMatch(/ask the user/);
+    });
+
+    it('omits the coaching instruction when all themes are covered', () => {
+      const themes: ThemeCoverage[] = [
+        { name: 'Stakeholder Management', hasExperience: true },
+        { name: 'Leadership', hasExperience: true },
+      ];
+      const prompt = buildCoverLetterSystemPrompt(undefined, undefined, undefined, undefined, themes);
+      expect(prompt).not.toContain('Stakeholder Management');
+      expect(prompt).not.toContain('<experience_candidate');
+    });
+
+    it('instructs the AI to wrap candidate stories in <experience_candidate> tags when there are uncovered themes', () => {
+      const themes: ThemeCoverage[] = [
+        { name: 'Stakeholder Management', hasExperience: false },
+      ];
+      const prompt = buildCoverLetterSystemPrompt(undefined, undefined, undefined, undefined, themes);
+      expect(prompt).toContain('<experience_candidate');
+    });
+
+    it('builds the prompt without a themes block when themes are undefined or empty', () => {
+      const undef = buildCoverLetterSystemPrompt(undefined, undefined, undefined, undefined, undefined);
+      const empty = buildCoverLetterSystemPrompt(undefined, undefined, undefined, undefined, []);
+      expect(undef).not.toContain('undefined');
+      expect(undef).not.toContain('<experience_candidate');
+      expect(empty).not.toContain('undefined');
+      expect(empty).not.toContain('<experience_candidate');
+    });
   });
 });
