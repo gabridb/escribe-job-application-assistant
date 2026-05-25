@@ -7,6 +7,7 @@ import { cvService } from '@/lib/services/cv-service'
 import { jobsService } from '@/lib/services/jobs-service'
 import { relevantExperienceService } from '@/lib/services/relevant-experience-service'
 import { RelevantExperienceEntry, ThemeCoverage } from '@/lib/services/chat-service'
+import { buildCoverLetterGreeting } from './cover-letter-greeting'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -20,6 +21,7 @@ interface ThemeWithCoverage extends ThemeCoverage {
 
 export default function CoverLetterWritingAssistant({ jobId }: CoverLetterWritingAssistantProps) {
   const [initialContent, setInitialContent] = useState<string | undefined>(undefined)
+  const [initialGreeting, setInitialGreeting] = useState<string | undefined>(undefined)
   const [baseCvText, setBaseCvText] = useState<string | undefined>(undefined)
   const [jobDescription, setJobDescription] = useState<string | undefined>(undefined)
   const [relevantExperiences, setRelevantExperiences] = useState<RelevantExperienceEntry[]>([])
@@ -74,6 +76,15 @@ export default function CoverLetterWritingAssistant({ jobId }: CoverLetterWritin
         setRelevantExperiences(experiences)
         setThemes(coverage)
       }
+
+      setInitialGreeting(
+        buildCoverLetterGreeting({
+          title: job?.title,
+          company: job?.company,
+          hasBaseCv: Boolean(baseCv?.text && baseCv.text.trim().length > 0),
+          experienceThemeNames: experiences.map((e) => e.themeName),
+        }),
+      )
     }
 
     load()
@@ -107,7 +118,7 @@ export default function CoverLetterWritingAssistant({ jobId }: CoverLetterWritin
     [jobId, themes],
   )
 
-  if (initialContent === undefined) {
+  if (initialContent === undefined || initialGreeting === undefined) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-3.5rem)] text-stone-400 text-sm">
         Loading…
@@ -122,6 +133,7 @@ export default function CoverLetterWritingAssistant({ jobId }: CoverLetterWritin
       title="Cover Letter"
       subtitle="Write your cover letter for this role"
       initialContent={initialContent}
+      initialGreeting={initialGreeting}
       jobDescription={jobDescription}
       baseCvText={baseCvText}
       relevantExperiences={relevantExperiences}

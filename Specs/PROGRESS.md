@@ -4,7 +4,6 @@ Improvements / known issues:
 
 - Para escribir la cl, se envía todas las relevantExperiences al llm. Un agente tendría primero que resumirlas si quiero que sea más corto
 - Bug: the pencil (edit) icon in the Dashboard Actions column is not visible — the edit-job-metadata feature works but the affordance is missing
-- Cover Letter chat opens with a generic "Hello! I'm your AI writing assistant…" greeting that gives the user no starting point. The first message should be task-aware — e.g. reference the specific job/company and suggest a concrete next step (the "Draft a first version" button already exists, so the greeting should complement it, not duplicate it).
 - AI-generated cover letters need visible spacing between paragraphs in the editor (currently paragraphs render too close together — either tweak the editor's paragraph margin or ensure the AI output produces blank lines that Tiptap renders with proper vertical rhythm).
 - "Write Cover Letter" and "Tailor CV" should be a single continuous flow, not two separate destinations from the Job Overview page. After finishing the cover letter the user should be guided straight into tailoring the CV (or vice versa) without having to navigate back to Job Overview and pick the other CTA.
 

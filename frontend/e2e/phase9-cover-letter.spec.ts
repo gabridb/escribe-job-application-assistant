@@ -123,6 +123,63 @@ test('"Want me to write a first draft for you?" card is visible', async ({ page 
   await expect(page.getByText('Want me to write a first draft for you?')).toBeVisible()
 })
 
+test('first assistant message is task-aware: names job, company, and saved stories', async ({
+  page,
+}) => {
+  const themeId = 'theme-1'
+  await page.route('**/api/jobs', (route) => route.fulfill({ json: [mockJob] }))
+  await page.route(`**/api/jobs/${JOB_ID}`, (route) => route.fulfill({ json: mockJob }))
+  await page.route(`**/api/jobs/${JOB_ID}/cover-letter`, (route) =>
+    route.fulfill({ status: 404, body: '' }),
+  )
+  await page.route(`**/api/jobs/${JOB_ID}/themes`, (route) =>
+    route.fulfill({
+      json: [{ id: themeId, name: 'Cross-functional leadership', description: 'desc' }],
+    }),
+  )
+  await page.route(
+    `**/api/jobs/${JOB_ID}/themes/${themeId}/experience`,
+    (route) => route.fulfill({ json: { text: 'A STAR story about leading a team.' } }),
+  )
+  await page.route('**/api/cv', (route) =>
+    route.fulfill({ json: { text: 'My base CV markdown.' } }),
+  )
+
+  await page.goto(`/jobs/${JOB_ID}/cover-letter`)
+
+  await expect(page.getByTestId('editor-content')).toBeVisible({ timeout: 8000 })
+
+  const firstAssistantBubble = page.locator('div.bg-cyan-50').first()
+  await expect(firstAssistantBubble).toContainText(mockJob.title)
+  await expect(firstAssistantBubble).toContainText(mockJob.company)
+  await expect(firstAssistantBubble).toContainText(/stor(y|ies)/i)
+  await expect(firstAssistantBubble).not.toContainText(
+    'How can I help you improve your document today?',
+  )
+})
+
+test('first assistant message falls back to generic greeting when job metadata missing', async ({
+  page,
+}) => {
+  await page.route('**/api/jobs', (route) => route.fulfill({ json: [mockJob] }))
+  await page.route(`**/api/jobs/${JOB_ID}`, (route) =>
+    route.fulfill({ status: 404, body: '' }),
+  )
+  await page.route(`**/api/jobs/${JOB_ID}/cover-letter`, (route) =>
+    route.fulfill({ status: 404, body: '' }),
+  )
+  await page.route(`**/api/jobs/${JOB_ID}/themes`, (route) => route.fulfill({ json: [] }))
+  await page.route('**/api/cv', (route) => route.fulfill({ status: 404, body: '' }))
+
+  await page.goto(`/jobs/${JOB_ID}/cover-letter`)
+
+  await expect(page.getByTestId('editor-content')).toBeVisible({ timeout: 8000 })
+  const firstAssistantBubble = page.locator('div.bg-cyan-50').first()
+  await expect(firstAssistantBubble).toContainText(
+    'How can I help you improve your document today?',
+  )
+})
+
 test('clicking "Write my cover letter" fires POST /api/chat with cover-letter context', async ({
   page,
 }) => {
