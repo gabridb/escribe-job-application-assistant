@@ -34,25 +34,6 @@ Key concepts (see Glossary in PRD):
 - NestJS backend API: the frontend services layer calls `fetch('/api/...')`
 - No auth — single-user app
 
-**Out of scope:**
-
-- File parsing (PDF/DOCX) — raw text input only
-- Mobile layout
-- Export to PDF/DOCX
-
-## Routes
-
-```text
-/                               Dashboard — Job Offers list
-/jobs/new                       Add Job Offer
-/jobs/:jobId/themes             Key Interview Themes (job-scoped)
-/jobs/:jobId/themes/:themeId    Writing Assistant — Relevant Experience
-/jobs/:jobId/cover-letter       Writing Assistant — Cover Letter
-/jobs/:jobId/cv                 Writing Assistant — Tailored CV
-/experience                     Experience Library (global)
-/experience/:experienceId       Writing Assistant — Relevant Experience
-```
-
 ## Architecture Patterns
 
 ### Server / Client Component Split
@@ -174,6 +155,23 @@ After implementation:
 ### Manual testing at phase end
 
 Each phase ends with a manual test checklist defined in `Specs/PROGRESS.md`. After all Playwright tests pass, prompt the user to run the manual checklist before marking the phase as complete.
+
+---
+
+## Verification commands
+
+Run from the repo root:
+
+| Purpose | Command |
+| --- | --- |
+| Lint frontend + backend | `npm run lint` |
+| Type-check (no emit) | `npm run typecheck` |
+| Unit tests (backend Jest) | `npm run test:backend` |
+| E2E tests (Playwright) | `npm run test:e2e` |
+| Build both workspaces | `npm run build` |
+| **Full pre-push check** | `npm run check` |
+
+`npm run check` runs lint → typecheck → tests → build. It is the canonical "is this branch ready?" command and must pass before opening a PR.
 
 ---
 
